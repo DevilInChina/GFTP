@@ -6,6 +6,8 @@
 #include  <winsock.h>
 #else
 #include <sys/socket.h>
+#include <arpa/inet.h>
+
 #endif
 #include "Connnector.h"
 bool Connnector::CreateSocket(string ip, int port) {
