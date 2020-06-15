@@ -6,17 +6,28 @@
 #define GFTP_CONNECTOR_H
 
 #include <string>
+#include <string.h>
+
 #ifdef  WIN32
 #include  <winsock.h>
 #else
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <zconf.h>
 #endif
+
 #ifdef  WIN32
 #define CurSocket SOCKET
-
 #else
 #define CurSocket int
+#endif
+
+#ifndef SOCKADDR
+#define SOCKADDR sockaddr
+#endif
+
+#ifndef INVALID_SOCKET
+#define INVALID_SOCKET ((CurSocket)(~0))
 #endif
 using namespace std;
 class Connector {

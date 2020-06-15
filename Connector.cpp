@@ -43,12 +43,12 @@ bool Connector::CreateSocket(const string &ip, int port) {
         return -1;
     }
     cout<<" "<<_socket<<" "<<errno<<endl;
-    SOCKET sClient;
+    CurSocket sClient;
     sockaddr_in remoteAddr;
     int nAddrlen = sizeof(remoteAddr);
     char revData[255];
     while (1){
-        sClient = accept(_socket, (SOCKADDR *)&remoteAddr, &nAddrlen);
+        sClient = accept(_socket, (SOCKADDR *)&remoteAddr, (socklen_t*)&nAddrlen);
         if(sClient == INVALID_SOCKET)
         {
             continue;
@@ -66,14 +66,14 @@ bool Connector::CreateSocket(const string &ip, int port) {
         //发送数据
         const char * sendData = "hello!\n";
         send(sClient, sendData, strlen(sendData), 0);
-        closesocket(sClient);
+        close(sClient);
     }
     return _socket;
 }
 int Connector::SocketAccept() {
     struct sockaddr_in peer;
     int len=sizeof(peer);
-    int connfd=accept(_socket,(struct sockaddr*)&peer,&len);
+    int connfd=accept(_socket,(struct sockaddr*)&peer,(socklen_t*)&len);
     if(connfd<0)
     {
         //print_log()
