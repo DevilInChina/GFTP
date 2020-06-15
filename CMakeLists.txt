@@ -3,4 +3,4 @@ project(GFTP)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(GFTP main.cpp)
+add_executable(GFTP main.cpp Connnector.cpp Connnector.h)
