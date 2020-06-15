@@ -12,6 +12,7 @@
 #include  <winsock.h>
 #else
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <arpa/inet.h>
 #include <zconf.h>
 #endif
@@ -23,6 +24,7 @@
 #else
 #define CurSocket int
 #define CurClose close
+#define SOCKET_ERROR (-1)
 #endif
 
 #ifndef SOCKADDR
