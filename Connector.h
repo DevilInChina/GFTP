@@ -18,8 +18,11 @@
 
 #ifdef  WIN32
 #define CurSocket SOCKET
+#define CurClose closesocket
+#define socklen_t int
 #else
 #define CurSocket int
+#define CurClose close
 #endif
 
 #ifndef SOCKADDR
@@ -42,13 +45,21 @@ public:
 };
 class ftpServer: public Connector{
 public:
-    ftpServer(CurSocket sock);
+    ftpServer(const string &ip,int port);
+    void beginListen();
     ~ftpServer();
 private:
 };
 class ftpClient:public Connector{
 public:
+    ftpClient(const string&ip,int port);
+    ~ftpClient();
+    int Send(const string &data);
+    int get();
 
+private:
+    string ip;
+    int port;
 };
 
 

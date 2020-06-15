@@ -42,32 +42,6 @@ bool Connector::CreateSocket(const string &ip, int port) {
         //print_log();
         return -1;
     }
-    cout<<" "<<_socket<<" "<<errno<<endl;
-    CurSocket sClient;
-    sockaddr_in remoteAddr;
-    int nAddrlen = sizeof(remoteAddr);
-    char revData[255];
-    while (1){
-        sClient = accept(_socket, (SOCKADDR *)&remoteAddr, (socklen_t*)&nAddrlen);
-        if(sClient == INVALID_SOCKET)
-        {
-            continue;
-        }
-        printf("get:%s \r\n", inet_ntoa(remoteAddr.sin_addr));
-
-        //接收数据
-        int ret = recv(sClient, revData, 255, 0);
-        if(ret > 0)
-        {
-            revData[ret] = 0x00;
-            printf(revData);
-        }
-
-        //发送数据
-        const char * sendData = "hello!\n";
-        send(sClient, sendData, strlen(sendData), 0);
-        close(sClient);
-    }
     return _socket;
 }
 int Connector::SocketAccept() {
@@ -82,31 +56,25 @@ int Connector::SocketAccept() {
     return connfd;
 }
 int Connector::SocketConnect(const string &ip, int port) {
-    if(ip.empty() || (port<0))
+    if(port<0 || ip.empty())
+        return -1;
+    _socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if(_socket == INVALID_SOCKET)
     {
-        //print_log()
+        printf("invalid socket!");
         return -1;
     }
 
-    int sock=socket(AF_INET,SOCK_STREAM,0);
-    if(sock<0)
-    {
-        //print_log()
-        return -1;
+    sockaddr_in serAddr;
+    serAddr.sin_family = AF_INET;
+    serAddr.sin_port = htons(port);
+    serAddr.sin_addr.s_addr = inet_addr(ip.c_str());
+    if(connect(_socket, (sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
+    {  //连接失败
+        printf("connect error !");
+        CurClose(_socket);
     }
-
-    struct sockaddr_in peer;
-    peer.sin_family=AF_INET;
-    peer.sin_port=htons(port);
-    peer.sin_addr.s_addr=inet_addr(ip.c_str());
-
-    if(connect(sock,(struct sockaddr*)&peer,sizeof(peer))<0)
-    {
-        //print_log()
-        return -1;
-    }
-
-    return sock;
+    return _socket;
 }
 
 int Connector::recv_data(CurSocket sock,char* buf,int bufsize){
@@ -131,7 +99,55 @@ int Connector::send_data(CurSocket sock,const char*buff,int buffsize){
     return ret;
 }
 
-ftpServer::ftpServer(CurSocket sock):Connector(){
-    _socket = sock;
+ftpServer::ftpServer(const string&ip,int port):Connector(){
+    CreateSocket(ip,port);
 }
+void ftpServer::beginListen() {
+    CurSocket sClient;
+    sockaddr_in remoteAddr;
+    int nAddrlen = sizeof(remoteAddr);
+    char revData[255];
+    while (true){
+        sClient = accept(_socket, (SOCKADDR *)&remoteAddr, (socklen_t*)&nAddrlen);
+        if(sClient == INVALID_SOCKET)
+        {
+            continue;
+        }
+        printf("\n%d:%s \r\n",sClient, inet_ntoa(remoteAddr.sin_addr));
+
+        int ret = recv(sClient, revData, 255, 0);
+        if(ret > 0)
+        {
+            revData[ret] = 0x00;
+            printf(revData);
+        }
+
+        const char * sendData = "hello!\n";
+        send(sClient, sendData, strlen(sendData), 0);
+        CurClose(sClient);
+    }
+}
+
 ftpServer::~ftpServer() {}
+
+ftpClient::ftpClient(const string&ip,int port):ip(ip),port(port) {
+
+}
+
+ftpClient::~ftpClient() {
+}
+int ftpClient::Send(const string &data) {
+    const char * sendData;
+    SocketConnect(ip,port);
+    cout<<_socket<<endl;
+    send(_socket, data.c_str(), data.length(), 0);
+    char recData[255];
+    int ret = recv(_socket, recData, 255, 0);
+    if(ret>0){
+        recData[ret] = 0x00;
+        cout<<recData<<" "<<_socket<<endl;
+    }else{
+        cout<<"rec err"<<endl;
+    }
+    CurClose(_socket);
+}
