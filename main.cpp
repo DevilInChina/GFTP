@@ -9,9 +9,9 @@ int main(int argc,char **argv) {
 #endif
 
     if(argc > 1){
-        int k = s.CreateSocket("192.168.2.100",1453);
+        int k = s.CreateSocket("192.168.2.108",1453);
     }else{
-        SOCKET sclient = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        CurSocket sclient = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if(sclient == INVALID_SOCKET)
         {
             printf("invalid socket!");
@@ -21,11 +21,11 @@ int main(int argc,char **argv) {
         sockaddr_in serAddr;
         serAddr.sin_family = AF_INET;
         serAddr.sin_port = htons(1453);
-        serAddr.sin_addr.S_un.S_addr = inet_addr("192.168.2.100");
-        if(connect(sclient, (sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
+        serAddr.sin_addr.s_addr = inet_addr("192.168.2.100");
+        if(connect(sclient, (sockaddr *)&serAddr, sizeof(serAddr))<0)
         {  //连接失败
             printf("connect error !");
-            closesocket(sclient);
+            close(sclient);
             return 0;
         }
 
@@ -46,8 +46,8 @@ int main(int argc,char **argv) {
             recData[ret] = 0x00;
             printf(recData);
         }
-        closesocket(sclient);
+        close(sclient);
      }
-    WSACleanup();
+    //WSACleanup();
     return 0;
 }
