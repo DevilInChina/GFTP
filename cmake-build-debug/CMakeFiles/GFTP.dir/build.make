@@ -77,17 +77,80 @@ CMakeFiles\GFTP.dir\main.cpp.s: cmake_force
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\GFTP.dir\main.cpp.s /c D:\FacSource\Things\GFTP\main.cpp
 <<
 
+CMakeFiles\GFTP.dir\Connector.cpp.obj: CMakeFiles\GFTP.dir\flags.make
+CMakeFiles\GFTP.dir\Connector.cpp.obj: ..\Connector.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\FacSource\Things\GFTP\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/GFTP.dir/Connector.cpp.obj"
+	C:\PROGRA~2\MICROS~1\2019\COMMUN~1\VC\Tools\MSVC\1425~1.286\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoCMakeFiles\GFTP.dir\Connector.cpp.obj /FdCMakeFiles\GFTP.dir\ /FS -c D:\FacSource\Things\GFTP\Connector.cpp
+<<
+
+CMakeFiles\GFTP.dir\Connector.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/GFTP.dir/Connector.cpp.i"
+	C:\PROGRA~2\MICROS~1\2019\COMMUN~1\VC\Tools\MSVC\1425~1.286\bin\Hostx64\x64\cl.exe > CMakeFiles\GFTP.dir\Connector.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\FacSource\Things\GFTP\Connector.cpp
+<<
+
+CMakeFiles\GFTP.dir\Connector.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/GFTP.dir/Connector.cpp.s"
+	C:\PROGRA~2\MICROS~1\2019\COMMUN~1\VC\Tools\MSVC\1425~1.286\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\GFTP.dir\Connector.cpp.s /c D:\FacSource\Things\GFTP\Connector.cpp
+<<
+
+CMakeFiles\GFTP.dir\ftpServer.cpp.obj: CMakeFiles\GFTP.dir\flags.make
+CMakeFiles\GFTP.dir\ftpServer.cpp.obj: ..\ftpServer.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\FacSource\Things\GFTP\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/GFTP.dir/ftpServer.cpp.obj"
+	C:\PROGRA~2\MICROS~1\2019\COMMUN~1\VC\Tools\MSVC\1425~1.286\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoCMakeFiles\GFTP.dir\ftpServer.cpp.obj /FdCMakeFiles\GFTP.dir\ /FS -c D:\FacSource\Things\GFTP\ftpServer.cpp
+<<
+
+CMakeFiles\GFTP.dir\ftpServer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/GFTP.dir/ftpServer.cpp.i"
+	C:\PROGRA~2\MICROS~1\2019\COMMUN~1\VC\Tools\MSVC\1425~1.286\bin\Hostx64\x64\cl.exe > CMakeFiles\GFTP.dir\ftpServer.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\FacSource\Things\GFTP\ftpServer.cpp
+<<
+
+CMakeFiles\GFTP.dir\ftpServer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/GFTP.dir/ftpServer.cpp.s"
+	C:\PROGRA~2\MICROS~1\2019\COMMUN~1\VC\Tools\MSVC\1425~1.286\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\GFTP.dir\ftpServer.cpp.s /c D:\FacSource\Things\GFTP\ftpServer.cpp
+<<
+
+CMakeFiles\GFTP.dir\ftpClient.cpp.obj: CMakeFiles\GFTP.dir\flags.make
+CMakeFiles\GFTP.dir\ftpClient.cpp.obj: ..\ftpClient.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\FacSource\Things\GFTP\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/GFTP.dir/ftpClient.cpp.obj"
+	C:\PROGRA~2\MICROS~1\2019\COMMUN~1\VC\Tools\MSVC\1425~1.286\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoCMakeFiles\GFTP.dir\ftpClient.cpp.obj /FdCMakeFiles\GFTP.dir\ /FS -c D:\FacSource\Things\GFTP\ftpClient.cpp
+<<
+
+CMakeFiles\GFTP.dir\ftpClient.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/GFTP.dir/ftpClient.cpp.i"
+	C:\PROGRA~2\MICROS~1\2019\COMMUN~1\VC\Tools\MSVC\1425~1.286\bin\Hostx64\x64\cl.exe > CMakeFiles\GFTP.dir\ftpClient.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\FacSource\Things\GFTP\ftpClient.cpp
+<<
+
+CMakeFiles\GFTP.dir\ftpClient.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/GFTP.dir/ftpClient.cpp.s"
+	C:\PROGRA~2\MICROS~1\2019\COMMUN~1\VC\Tools\MSVC\1425~1.286\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\GFTP.dir\ftpClient.cpp.s /c D:\FacSource\Things\GFTP\ftpClient.cpp
+<<
+
 # Object files for target GFTP
 GFTP_OBJECTS = \
-"CMakeFiles\GFTP.dir\main.cpp.obj"
+"CMakeFiles\GFTP.dir\main.cpp.obj" \
+"CMakeFiles\GFTP.dir\Connector.cpp.obj" \
+"CMakeFiles\GFTP.dir\ftpServer.cpp.obj" \
+"CMakeFiles\GFTP.dir\ftpClient.cpp.obj"
 
 # External object files for target GFTP
 GFTP_EXTERNAL_OBJECTS =
 
 GFTP.exe: CMakeFiles\GFTP.dir\main.cpp.obj
+GFTP.exe: CMakeFiles\GFTP.dir\Connector.cpp.obj
+GFTP.exe: CMakeFiles\GFTP.dir\ftpServer.cpp.obj
+GFTP.exe: CMakeFiles\GFTP.dir\ftpClient.cpp.obj
 GFTP.exe: CMakeFiles\GFTP.dir\build.make
 GFTP.exe: CMakeFiles\GFTP.dir\objects1.rsp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\FacSource\Things\GFTP\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable GFTP.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\FacSource\Things\GFTP\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable GFTP.exe"
 	C:\Users\Administrator\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\193.6911.21\bin\cmake\win\bin\cmake.exe -E vs_link_exe --intdir=CMakeFiles\GFTP.dir --rc=C:\PROGRA~2\WI3CF2~1\10\bin\100183~1.0\x64\rc.exe --mt=C:\PROGRA~2\WI3CF2~1\10\bin\100183~1.0\x64\mt.exe --manifests  -- C:\PROGRA~2\MICROS~1\2019\COMMUN~1\VC\Tools\MSVC\1425~1.286\bin\Hostx64\x64\link.exe /nologo @CMakeFiles\GFTP.dir\objects1.rsp @<<
  /out:GFTP.exe /implib:GFTP.lib /pdb:D:\FacSource\Things\GFTP\cmake-build-debug\GFTP.pdb /version:0.0  /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib 
 <<

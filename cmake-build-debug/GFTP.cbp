@@ -84,6 +84,24 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="D:/FacSource/Things/GFTP/Connector.cpp">
+			<Option target="GFTP"/>
+		</Unit>
+		<Unit filename="D:/FacSource/Things/GFTP/Connector.h">
+			<Option target="GFTP"/>
+		</Unit>
+		<Unit filename="D:/FacSource/Things/GFTP/ftpClient.cpp">
+			<Option target="GFTP"/>
+		</Unit>
+		<Unit filename="D:/FacSource/Things/GFTP/ftpClient.h">
+			<Option target="GFTP"/>
+		</Unit>
+		<Unit filename="D:/FacSource/Things/GFTP/ftpServer.cpp">
+			<Option target="GFTP"/>
+		</Unit>
+		<Unit filename="D:/FacSource/Things/GFTP/ftpServer.h">
+			<Option target="GFTP"/>
+		</Unit>
 		<Unit filename="D:/FacSource/Things/GFTP/main.cpp">
 			<Option target="GFTP"/>
 		</Unit>

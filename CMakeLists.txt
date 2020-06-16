@@ -3,4 +3,4 @@ project(GFTP)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(GFTP main.cpp Connector.cpp Connector.h)
+add_executable(GFTP main.cpp Connector.cpp Connector.h ftpServer.cpp ftpServer.h ftpClient.cpp ftpClient.h)

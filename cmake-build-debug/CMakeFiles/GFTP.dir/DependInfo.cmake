@@ -4,6 +4,9 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
+  "D:/FacSource/Things/GFTP/Connector.cpp" "D:/FacSource/Things/GFTP/cmake-build-debug/CMakeFiles/GFTP.dir/Connector.cpp.obj"
+  "D:/FacSource/Things/GFTP/ftpClient.cpp" "D:/FacSource/Things/GFTP/cmake-build-debug/CMakeFiles/GFTP.dir/ftpClient.cpp.obj"
+  "D:/FacSource/Things/GFTP/ftpServer.cpp" "D:/FacSource/Things/GFTP/cmake-build-debug/CMakeFiles/GFTP.dir/ftpServer.cpp.obj"
   "D:/FacSource/Things/GFTP/main.cpp" "D:/FacSource/Things/GFTP/cmake-build-debug/CMakeFiles/GFTP.dir/main.cpp.obj"
   )
 set(CMAKE_CXX_COMPILER_ID "MSVC")

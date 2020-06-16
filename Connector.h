@@ -6,8 +6,10 @@
 #define GFTP_CONNECTOR_H
 
 #include <string>
-#include <string.h>
-
+#include <cstring>
+#include <thread>
+#include <map>
+#include <functional>
 #ifdef  WIN32
 #include  <winsock.h>
 #else
@@ -43,26 +45,12 @@ public:
     int recv_data(CurSocket sock,char* buf,int bufsize)  ;
     int send_response(CurSocket sock,int code) ;
     int send_data(CurSocket sock,const char *buff,int bufsize);
+    int send_data(CurSocket sock,const string&s);
+    string Encode(const string &a);
     CurSocket _socket;
-};
-class ftpServer: public Connector{
-public:
-    ftpServer(const string &ip,int port);
-    void beginListen();
-    ~ftpServer();
-private:
-};
-class ftpClient:public Connector{
-public:
-    ftpClient(const string&ip,int port);
-    ~ftpClient();
-    int Send(const string &data);
-    int get();
-
-private:
-    string ip;
-    int port;
+    const int maxSize=255;
 };
 
 
+void sighandler(int );
 #endif //GFTP_CONNECTOR_H

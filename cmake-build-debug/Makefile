@@ -124,6 +124,87 @@ GFTP\fast:
 	$(MAKE) -f CMakeFiles\GFTP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\GFTP.dir\build
 .PHONY : GFTP\fast
 
+Connector.obj: Connector.cpp.obj
+
+.PHONY : Connector.obj
+
+# target to build an object file
+Connector.cpp.obj:
+	$(MAKE) -f CMakeFiles\GFTP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\GFTP.dir\Connector.cpp.obj
+.PHONY : Connector.cpp.obj
+
+Connector.i: Connector.cpp.i
+
+.PHONY : Connector.i
+
+# target to preprocess a source file
+Connector.cpp.i:
+	$(MAKE) -f CMakeFiles\GFTP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\GFTP.dir\Connector.cpp.i
+.PHONY : Connector.cpp.i
+
+Connector.s: Connector.cpp.s
+
+.PHONY : Connector.s
+
+# target to generate assembly for a file
+Connector.cpp.s:
+	$(MAKE) -f CMakeFiles\GFTP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\GFTP.dir\Connector.cpp.s
+.PHONY : Connector.cpp.s
+
+ftpClient.obj: ftpClient.cpp.obj
+
+.PHONY : ftpClient.obj
+
+# target to build an object file
+ftpClient.cpp.obj:
+	$(MAKE) -f CMakeFiles\GFTP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\GFTP.dir\ftpClient.cpp.obj
+.PHONY : ftpClient.cpp.obj
+
+ftpClient.i: ftpClient.cpp.i
+
+.PHONY : ftpClient.i
+
+# target to preprocess a source file
+ftpClient.cpp.i:
+	$(MAKE) -f CMakeFiles\GFTP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\GFTP.dir\ftpClient.cpp.i
+.PHONY : ftpClient.cpp.i
+
+ftpClient.s: ftpClient.cpp.s
+
+.PHONY : ftpClient.s
+
+# target to generate assembly for a file
+ftpClient.cpp.s:
+	$(MAKE) -f CMakeFiles\GFTP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\GFTP.dir\ftpClient.cpp.s
+.PHONY : ftpClient.cpp.s
+
+ftpServer.obj: ftpServer.cpp.obj
+
+.PHONY : ftpServer.obj
+
+# target to build an object file
+ftpServer.cpp.obj:
+	$(MAKE) -f CMakeFiles\GFTP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\GFTP.dir\ftpServer.cpp.obj
+.PHONY : ftpServer.cpp.obj
+
+ftpServer.i: ftpServer.cpp.i
+
+.PHONY : ftpServer.i
+
+# target to preprocess a source file
+ftpServer.cpp.i:
+	$(MAKE) -f CMakeFiles\GFTP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\GFTP.dir\ftpServer.cpp.i
+.PHONY : ftpServer.cpp.i
+
+ftpServer.s: ftpServer.cpp.s
+
+.PHONY : ftpServer.s
+
+# target to generate assembly for a file
+ftpServer.cpp.s:
+	$(MAKE) -f CMakeFiles\GFTP.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\GFTP.dir\ftpServer.cpp.s
+.PHONY : ftpServer.cpp.s
+
 main.obj: main.cpp.obj
 
 .PHONY : main.obj
@@ -160,6 +241,15 @@ help:
 	@echo ... GFTP
 	@echo ... edit_cache
 	@echo ... rebuild_cache
+	@echo ... Connector.obj
+	@echo ... Connector.i
+	@echo ... Connector.s
+	@echo ... ftpClient.obj
+	@echo ... ftpClient.i
+	@echo ... ftpClient.s
+	@echo ... ftpServer.obj
+	@echo ... ftpServer.i
+	@echo ... ftpServer.s
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s
