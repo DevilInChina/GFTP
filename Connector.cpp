@@ -306,3 +306,19 @@ char* Connector::recvBigData(CurSocket sock, int&length) {
     ret[length ] = 0;
     return ret;
 }
+string Connector::GetSelfIp() {
+#ifdef WIN32
+    PHOSTENT hostinfo;
+    char name[123];
+    if (gethostname(name, sizeof(name)) == 0) {
+        if ((hostinfo = gethostbyname(name)) != NULL) {
+            char *ips = inet_ntoa(*(struct in_addr *) *(hostinfo->h_addr_list+1));
+            string ret(ips);
+            free(ips);
+            return ret;
+        }
+    }
+#else
+
+#endif
+}

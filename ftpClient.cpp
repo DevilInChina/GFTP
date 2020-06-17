@@ -67,14 +67,7 @@ void ftpClient::beginProcess() {
                 vector<string> CMDS;
                 CMDS.emplace_back((passiveMode ? "PASV" : "PORT"));
                 if (!passiveMode) {/// port
-                    PHOSTENT hostinfo;
-                    char name[123];
-                    if (gethostname(name, sizeof(name)) == 0) {
-                        if ((hostinfo = gethostbyname(name)) != NULL) {
-                            char *ips = inet_ntoa(*(struct in_addr *) *(hostinfo->h_addr_list+1));
-                            printf("local ip : %s\n", ips);
-                        }
-                    }
+
                     CMDS.emplace_back("ima no ip");/// ip to port info
                 } else {
                     CMDS.emplace_back("");

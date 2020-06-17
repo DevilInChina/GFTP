@@ -66,6 +66,8 @@ public:
 
     char* recvBigData(CurSocket sock,int &length);
 
+    string GetSelfIp();
+
     string Encode(const string &a);
 
     CurSocket _socket;
