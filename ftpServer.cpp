@@ -174,7 +174,7 @@ int ftpServer::CMD_List(CurSocket client, CurSocket dataSocket,const string&path
     CMDS="dir ";
     del = "del ";
 #else
-    CMDs="ls ";
+    CMDS="ls ";
     del = "rm ";
 #endif
     string fileName = ".LIST"+to_string(client+dataSocket);
@@ -184,8 +184,8 @@ int ftpServer::CMD_List(CurSocket client, CurSocket dataSocket,const string&path
     system(CMDS.c_str());
     ifstream ff(fileName);
     string res;
-#ifdef WIN32
     string temp;
+#ifdef WIN32
     while (getline(ff,temp)) {
         if (!isdigit(temp[0]))continue;///not a file in windows
         stringstream ss(temp);

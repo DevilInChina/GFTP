@@ -4,12 +4,12 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "D:/FacSource/Things/GFTP/Connector.cpp" "D:/FacSource/Things/GFTP/cmake-build-debug/CMakeFiles/GFTP.dir/Connector.cpp.obj"
-  "D:/FacSource/Things/GFTP/ftpClient.cpp" "D:/FacSource/Things/GFTP/cmake-build-debug/CMakeFiles/GFTP.dir/ftpClient.cpp.obj"
-  "D:/FacSource/Things/GFTP/ftpServer.cpp" "D:/FacSource/Things/GFTP/cmake-build-debug/CMakeFiles/GFTP.dir/ftpServer.cpp.obj"
-  "D:/FacSource/Things/GFTP/main.cpp" "D:/FacSource/Things/GFTP/cmake-build-debug/CMakeFiles/GFTP.dir/main.cpp.obj"
+  "/home/devilinchina/GFTP/Connector.cpp" "/home/devilinchina/GFTP/cmake-build-debug/CMakeFiles/GFTP.dir/Connector.cpp.o"
+  "/home/devilinchina/GFTP/ftpClient.cpp" "/home/devilinchina/GFTP/cmake-build-debug/CMakeFiles/GFTP.dir/ftpClient.cpp.o"
+  "/home/devilinchina/GFTP/ftpServer.cpp" "/home/devilinchina/GFTP/cmake-build-debug/CMakeFiles/GFTP.dir/ftpServer.cpp.o"
+  "/home/devilinchina/GFTP/main.cpp" "/home/devilinchina/GFTP/cmake-build-debug/CMakeFiles/GFTP.dir/main.cpp.o"
   )
-set(CMAKE_CXX_COMPILER_ID "MSVC")
+set(CMAKE_CXX_COMPILER_ID "GNU")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH

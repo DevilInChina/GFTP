@@ -1,12 +1,10 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/GFTP.dir/Connector.cpp.obj"
-  "CMakeFiles/GFTP.dir/ftpClient.cpp.obj"
-  "CMakeFiles/GFTP.dir/ftpServer.cpp.obj"
-  "CMakeFiles/GFTP.dir/main.cpp.obj"
-  "GFTP.exe"
-  "GFTP.exe.manifest"
-  "GFTP.lib"
+  "CMakeFiles/GFTP.dir/main.cpp.o"
+  "CMakeFiles/GFTP.dir/Connector.cpp.o"
+  "CMakeFiles/GFTP.dir/ftpServer.cpp.o"
+  "CMakeFiles/GFTP.dir/ftpClient.cpp.o"
   "GFTP.pdb"
+  "GFTP"
 )
 
 # Per-language clean rules from dependency scanning.
