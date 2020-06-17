@@ -12,13 +12,16 @@ public:
     ftpServer(const string &ip,int port);
     void beginListen();
     void beginProcess(CurSocket client);
-    int login(CurSocket client);
     bool checkUser(const string&user,const string &psd);
+    CurSocket startDataConnection(CurSocket client);
+    CurSocket setPassiveMode(CurSocket client, vector<string> &cmds,bool &res,int &po);
     ~ftpServer();
 private:
+    int CMD_List(CurSocket client,CurSocket dataSocket,const string&path);
     enum serverStatus{
         unLogin,IpConnectSucceed,CheckingPsd,Logined
     };
     serverStatus curStatus;
+    string serverIp;
 };
 #endif //GFTP_FTPSERVER_H

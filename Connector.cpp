@@ -1,26 +1,51 @@
 //
 // Created by Administrator on 2020/6/15.
 //
-#include <stdio.h>
+#include <cstdio>
+
 using namespace std;
 
 #include "Connector.h"
-bool Connector::CreateSocket(const string &ip, int port) {
+
+void dealIPinfo(const string &ipPortInfo,string &ip,int &port){
+    string info = ipPortInfo;
+    replace(info.begin(),info.end(),',','.');
+    int cnt = 0;
+    int len1 = 0;
+    int len2 = 0;
+    for(int i = 0 ; i < info.length() ; ++i){
+        if(info[i]=='.')++cnt;
+        if(cnt==4 && len1==0){
+            len1 = i;
+        }else if(cnt==5){
+            len2 = i;
+            break;
+        }
+    }
+
+    ip = string(info.begin(),info.begin()+len1);
+    string a (info.begin()+len1+1,info.begin()+len2);
+    string b (info.begin()+len2+1,info.end());
+    port = atoi(a.c_str());
+    port<<=8;
+    port+=atoi(b.c_str());
+}
+
+CurSocket Connector::CreateSocket(const string &ip, int port,bool changeSelf) {
     if((ip.empty()) || (port<0))
     {
         //print_log()
         return -1;
     }
-
-    _socket=socket(AF_INET,SOCK_STREAM,0);
-    if(_socket<0 || (_socket==INVALID_SOCKET)){
+    CurSocket sock =socket(AF_INET,SOCK_STREAM,0);
+    if(sock<0 || (sock==INVALID_SOCKET)){
         //print_log();
         return -1;
     }
 
     int op=1;
     try {
-        setsockopt(_socket,SOL_SOCKET,SO_REUSEADDR,(char*)&op,sizeof(op));
+        setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,(char*)&op,sizeof(op));
     }catch (int s){
 
     }
@@ -30,35 +55,42 @@ bool Connector::CreateSocket(const string &ip, int port) {
     local.sin_port=htons(port);
     local.sin_addr.s_addr=inet_addr(ip.c_str());
 
-    if(bind(_socket,(struct sockaddr*)&local,sizeof(local))<0)
+    if(bind(sock,(struct sockaddr*)&local,sizeof(local))<0)
     {
         //print_log();
         return -1;
     }
 
-    if(listen(_socket,5)<0)
+    if(listen(sock,5)<0)
     {
         //print_log();
         return -1;
     }
-    return _socket;
+    if(changeSelf)_socket = sock;
+    return sock;
 }
-int Connector::SocketAccept() {
+
+CurSocket Connector::CreateSocket(const string &ipPortInfo,bool changeSelf){
+    string ip;
+    int port;
+    dealIPinfo(ipPortInfo,ip,port);
+    return CreateSocket(ip,port,changeSelf);
+}
+CurSocket Connector::SocketAccept(CurSocket sock) {
     struct sockaddr_in peer;
     int len=sizeof(peer);
-    int connfd=accept(_socket,(struct sockaddr*)&peer,(socklen_t*)&len);
+    CurSocket connfd=accept(sock,(struct sockaddr*)&peer,(socklen_t*)&len);
     if(connfd<0)
     {
-        //print_log()
         return -1;
     }
     return connfd;
 }
-int Connector::SocketConnect(const string &ip, int port) {
+CurSocket Connector::SocketConnect(const string &ip, int port,bool changeSelf) {
     if(port<0 || ip.empty())
         return -1;
-    _socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if(_socket == INVALID_SOCKET)
+    CurSocket ret = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if(ret == INVALID_SOCKET)
     {
         printf("invalid socket!");
         return -1;
@@ -68,14 +100,23 @@ int Connector::SocketConnect(const string &ip, int port) {
     serAddr.sin_family = AF_INET;
     serAddr.sin_port = htons(port);
     serAddr.sin_addr.s_addr = inet_addr(ip.c_str());
-    if(connect(_socket, (sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
+    if(connect(ret, (sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
     {  //连接失败
-        printf("connect error !\n");
+        printf("%s %d connect error !\n",ip.c_str(),port);
         return -1;
-        CurClose(_socket);
     }
-    return _socket;
+    if(changeSelf)_socket = ret;
+    return ret;
 }
+
+CurSocket Connector::SocketConnect(const string &ipPortInfo,bool changeSelf) {
+    string ip;
+    int port;
+    dealIPinfo(ipPortInfo,ip,port);
+
+    return SocketConnect(ip,port,changeSelf);
+}
+
 
 //strBaye的长度
 class  MD5 {
@@ -208,27 +249,60 @@ string Connector::Encode(const string &a) {
     return Encoder.getMD5(a);
 }
 
-int Connector::recv_data(CurSocket sock,char* buf,int bufsize) {
+int Connector::recv_data(CurSocket sock,char* buf,unsigned long bufsize) {
     memset(buf, 0, bufsize);
     int s;
     s = recv(sock, buf, bufsize, 0);
     return s;
 }
-
-int Connector::send_response(CurSocket sock, int code){
-    int stat_code=htonl(code);
-    if(send(sock,(char*)&stat_code,sizeof(stat_code),0)<0)
+int Connector::sendSize(CurSocket sock, int size){
+    int sender = htonl(size);
+    if(send(sock,(char*)&sender, sizeof(sender),0)<0)
     {
-        //print_log()
         return -1;
     }
     return 0;
 }
-int Connector::send_data(CurSocket sock,const char*buff,int buffsize){
+int Connector::recvSize(CurSocket sock){
+    int recv;
+    puts("\nBefrecSize");
+    while (recv_data(sock, (char*)&recv, sizeof(recv)) <= 0){
+    }
+    recv = ntohl(recv);
+    return recv;
+}
+int Connector::send_response(CurSocket sock, int code,const string&resp){
+    int stat_code=htonl(code);
+    char bufint[maxSize];
+    bufint[4] = 0;
+    int *res = (int*)bufint;
+    *res = stat_code;
+    memcpy(bufint+4,resp.c_str(), sizeof(char)*resp.length());
+    string ret = string(bufint)+resp;
+    if(send(sock,bufint, sizeof(stat_code)+resp.length(),0)<0)
+    {
+        return -1;
+    }
+    return 0;
+}
+int Connector::send_data(CurSocket sock,const char*buff, int buffsize){
     int ret =send(sock,buff,buffsize,0);
     return ret;
 }
 int Connector::send_data(CurSocket sock,const string&data){
     int ret =send(sock,data.c_str(),data.length(),0);
+    return ret;
+}
+
+int Connector::sendBigData(CurSocket sock, const char*s, int length) {
+    sendSize(sock,length);
+    return send_data(sock,s,length);
+}
+char* Connector::recvBigData(CurSocket sock, int&length) {
+    length = recvSize(sock);
+    char *ret = new char[length + 1];
+
+    recv_data(sock, ret, length);
+    ret[length ] = 0;
     return ret;
 }

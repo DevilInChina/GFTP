@@ -1,6 +1,7 @@
 #include <iostream>
 #include <csignal>
-#include "Connector.h"
+#include "ftpServer.h"
+#include "ftpClient.h"
 char buff[1024];
 
 int main(int argc,char **argv) {
@@ -10,11 +11,11 @@ int main(int argc,char **argv) {
 #endif
     signal(SIGINT,sighandler);
     if(argc > 1){
-        ftpServer s("192.168.2.100",1400);
+        ftpServer s("192.168.2.100",INFOPORT);
         cout<<"start linsen "<<s._socket<<endl;
         s.beginListen();
     }else{
-        ftpClient s(1400);
+        ftpClient s(INFOPORT);
         s.beginProcess();
     }
 #ifdef WIN32
