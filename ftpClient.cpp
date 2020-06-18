@@ -198,9 +198,9 @@ void ftpClient::beginProcess() {
                         delete s;
                         recResponse(_socket, ret);///recive 226 or 551
                     }else{
-                        CurClose(DataSocket);
-                        DataSocket = INVALID_SOCKET;
                     }
+                    CurClose(DataSocket);
+                    DataSocket = INVALID_SOCKET;
                 } else if (cmds[0] == "get") {
                     if (cmds.size() == 1) {
                         cout<<"usage: get remote_file [local_file]\n";
@@ -217,9 +217,9 @@ void ftpClient::beginProcess() {
                             recvFile(DataSocket,cmds[2],DataSocket+_socket);
                             recResponse(_socket, ret);///recive 226 or 551
                         }else{
-                            CurClose(DataSocket);
-                            DataSocket = INVALID_SOCKET;
                         }
+                        CurClose(DataSocket);
+                        DataSocket = INVALID_SOCKET;
                     }
 
                 } else if (cmds[0] == "put") {
@@ -233,14 +233,14 @@ void ftpClient::beginProcess() {
                         if(cmds.size()==2){
                             cmds.push_back(cmds[1]);
                         }
-                        sendDataAndResponse(_socket, "STOR", cmds[1]+" "+cmds[2], ret);
+                        sendDataAndResponse(_socket, "STOR", cmds[2], ret);
                         if(lastResponse==150) {
                             sendFile(DataSocket,cmds[1],DataSocket+_socket);
                             recResponse(_socket, ret);///recive 226 or 551
                         }else{
-                            CurClose(DataSocket);
-                            DataSocket = INVALID_SOCKET;
                         }
+                        CurClose(DataSocket);
+                        DataSocket = INVALID_SOCKET;
                     }
                 }else if (cmds[0]=="cd") {
                     if (cmds.size() == 1) cmds.emplace_back(".");

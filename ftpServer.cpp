@@ -122,6 +122,14 @@ void ftpServer::beginProcess(CurSocket client) {
                     }else{
                         send_response(client, 426,"Data connection error");
                     }
+                }else if(cmds[0]=="STOR"){
+                    if(dataSocketInProcess != INVALID_SOCKET) {
+                        CMD_Stor(client, dataSocketInProcess, curPath + FILESEPERATOR + cmds[1]) ;
+                        CurClose(dataSocketInProcess);
+                        dataSocketInProcess = INVALID_SOCKET;
+                    }else{
+                        send_response(client, 426,"Data connection error");
+                    }
                 }else if(cmds[0]=="CWD"){
                     CMD_Cwd(client, dataSocketInProcess, cmds[1],workingPath,curPath);
                 }else if(cmds[0]=="SIZE"){
@@ -305,8 +313,22 @@ int ftpServer::CMD_Retr(CurSocket client, CurSocket dataSocket, const string &pa
         send_response(client,550,"No such file");
     }else{
         send_response(client,150);
+        sendFile(dataSocket,path,client+dataSocket);
     }
-    sendFile(dataSocket,path,client+dataSocket);
+
+    send_response(client,226);
+    return 1;
+}
+int ftpServer::CMD_Stor(CurSocket client, CurSocket dataSocket, const string &path) {
+    long long ret = getFileSize(path,client+dataSocket);
+    if(ret==-1){
+        send_response(client,550,"Is a directory");
+    }else if(ret==-2){///no file and not directory
+        send_response(client,150);
+        recvFile(dataSocket,path,client+dataSocket);
+    }else{
+        send_response(client,550,"File Exists");
+    }
 
     send_response(client,226);
     return 1;
