@@ -303,13 +303,15 @@ int Connector::sendBigData(CurSocket sock, const char*s, int length) {
     sendSize(sock,length);
     return send_data(sock,s,length);
 }
-char* Connector::recvBigData(CurSocket sock, int&length) {
-    length = recvSize(sock);
+char* Connector::alloc_recv_data(CurSocket sock,int length){
     char *ret = new char[length + 1];
-
     recv_data(sock, ret, length);
     ret[length ] = 0;
     return ret;
+}
+char* Connector::recvBigData(CurSocket sock, int&length) {
+    length = recvSize(sock);
+    return alloc_recv_data(sock,length);
 }
 
 int Connector::getRandomPort() {
@@ -440,7 +442,7 @@ int Connector::sendFile(CurSocket sock, const string &paths,int Encodes) {
 
 int Connector::recvFile(CurSocket sock, const string &paths,int Encodes) {
     int buff_size;
-
+    buff_size=recvSize(sock);
     if(buff_size<0){
         return 0;
     }
@@ -474,7 +476,7 @@ int Connector::recvFile(CurSocket sock, const string &paths,int Encodes) {
                 buff_size);           // The number of bytes to map to view
 
         // copy data to shared memory
-        char *share_buffer = recvBigData(sock,buff_size);
+        char *share_buffer = alloc_recv_data(sock,buff_size);
         memcpy(lp_base, share_buffer, buff_size);
         delete share_buffer;
         //FlushViewOfFile(lp_base, buff_size); // can choose save to file or not

@@ -78,7 +78,7 @@ public:
     int sendBigData(CurSocket sock, const char *s, int length);
 
     char *recvBigData(CurSocket sock, int &length);
-
+    char *alloc_recv_data(CurSocket sock, int length);
     int sendFile(CurSocket sock,const string &path,int Encodes);
 
     int recvFile(CurSocket sock,const string &path,int Encodes);

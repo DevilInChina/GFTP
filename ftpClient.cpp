@@ -209,7 +209,6 @@ void ftpClient::beginProcess() {
                             cout << (passiveMode ? "PASV" : "PORT") << " connect faild" << endl;
                             break;
                         }
-
                         sendDataAndResponse(_socket, "RETR", cmds[1], ret);
                         if(lastResponse==150) {
                             if(cmds.size()==2){
@@ -224,7 +223,25 @@ void ftpClient::beginProcess() {
                     }
 
                 } else if (cmds[0] == "put") {
-
+                    if (cmds.size() == 1) {
+                        cout<<"usage: put local_file [remote_file]\n";
+                    }else{
+                        if (DataSocket ==INVALID_SOCKET) {
+                            cout << (passiveMode ? "PASV" : "PORT") << " connect faild" << endl;
+                            break;
+                        }
+                        if(cmds.size()==2){
+                            cmds.push_back(cmds[1]);
+                        }
+                        sendDataAndResponse(_socket, "STOR", cmds[1]+" "+cmds[2], ret);
+                        if(lastResponse==150) {
+                            sendFile(DataSocket,cmds[1],DataSocket+_socket);
+                            recResponse(_socket, ret);///recive 226 or 551
+                        }else{
+                            CurClose(DataSocket);
+                            DataSocket = INVALID_SOCKET;
+                        }
+                    }
                 }else if (cmds[0]=="cd") {
                     if (cmds.size() == 1) cmds.emplace_back(".");
                     sendDataAndResponse(_socket, "CWD", cmds[1], ret);
