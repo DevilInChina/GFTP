@@ -39,8 +39,8 @@ ftpClient::ftpClient(int port):port(port) {
 }
 
 int ftpClient::Connect(const string &ip) {
-    int k = SocketConnect(ip,port);
-    if(k==-1){
+    CurSocket k = SocketConnect(ip,port);
+    if(k==INVALID_SOCKET){
         return 0;
     }
     string s;
@@ -52,22 +52,31 @@ int ftpClient::Connect(const string &ip) {
     return 1;
 }
 ftpClient::~ftpClient() {
-    if(_socket!=-1){
+    if(_socket!=INVALID_SOCKET){
         SendEnd();
     }
 }
-
 void printHelp(const set<string>&s){
     for(auto &it:s){
         cout<<it<<"\t\t";
     }
     cout<<'\n';
 }
+bool checkInvalid(const set<string>&s,const string &cmd){
+    if(!s.count(cmd)){
+        cout<<"invalid commands?"<<endl;
+        return true;
+    }else if(cmd=="?" || cmd=="help"){
+        printHelp(s);
+        return true;
+    }
+    return false;
+}
 void ftpClient::beginProcess() {
     string cmd, sig;
     cout << "ftp<";
     string ret;
-    CurSocket DataSocket = -1;
+    CurSocket DataSocket = INVALID_SOCKET;
     while (true) {
         getline(cin, cmd);
         stringstream sin(cmd);
@@ -80,12 +89,7 @@ void ftpClient::beginProcess() {
             SendEnd();
             return;
         }
-        if(!totalCmds.count(cmds[0])){
-            cout<<"invalid commands?"<<endl;
-            continue;
-        }else if(cmds[0]=="?" || cmds[0]=="help"){
-            printHelp(totalCmds);
-        }
+        cout<<cmd<<endl;
         if (curStatus == Logined) {
             if (dataTransferCmds.count(cmds[0])) {
                 vector<string> CMDS;
@@ -98,7 +102,7 @@ void ftpClient::beginProcess() {
                         CMDS.push_back(senderInfo);
                         DataSocket = buildDataConnector(_socket, CMDS);
                     } else {
-                        DataSocket = -1;
+                        DataSocket = INVALID_SOCKET;
                     }
                 } else {
                     CMDS.emplace_back("");
@@ -106,6 +110,7 @@ void ftpClient::beginProcess() {
                 }
             }
         }
+        cout<<DataSocket<<endl;
         switch (curStatus) {
             case unLogin: {
                 if (cmds[0] == "open") {
@@ -116,7 +121,8 @@ void ftpClient::beginProcess() {
 
                     }
                 }else{
-                    cout<<"Not connected."<<endl;
+                    if(!checkInvalid(totalCmds,cmds[0]))
+                        cout<<"Not connected."<<endl;
                 }
             }
                 break;
@@ -176,20 +182,32 @@ void ftpClient::beginProcess() {
                     passiveMode = !passiveMode;
                     cout << "passive mode " << (passiveMode ? "On" : "Off") << "\n";
                 } else if (cmds[0] == "ls") {
-                    if (DataSocket == -1) {
+                    if (DataSocket ==INVALID_SOCKET) {
                         cout << (passiveMode ? "PASV" : "PORT") << " connect faild" << endl;
                         break;
                     }
                     if (cmds.size() == 1) cmds.emplace_back(".");
                     sendDataAndResponse(_socket, "LIST", cmds[1], ret);
-                    int length;
-                    char *s = recvBigData(DataSocket, length);
-                    cout << s << endl;
-                    recResponse(_socket, ret);///recive 226
+                    if(lastResponse==150) {
+                        int length;
+                        char *s = recvBigData(DataSocket, length);
+                        if(*s) {
+                            cout << s << endl;
+                        }
+                        recResponse(_socket, ret);///recive 226 or 551
+                    }else{
+                        CurClose(DataSocket);
+                        DataSocket = INVALID_SOCKET;
+                    }
                 } else if (cmds[0] == "get") {
 
                 } else if (cmds[0] == "put") {
-
+                }else if (cmds[0]=="cd") {
+                    if (cmds.size() == 1) cmds.emplace_back(".");
+                    sendDataAndResponse(_socket, "CWD", cmds[1], ret);
+                }else{
+                    if(!checkInvalid(totalCmds,cmds[0]))
+                        cout<<"Usage fault"<<endl;
                 }
             }
                 break;
@@ -198,18 +216,16 @@ void ftpClient::beginProcess() {
 }
 
 CurSocket ftpClient::buildDataConnector(CurSocket Server,vector<string>&cmds){
-    CurSocket dataSocket= -1;
+    CurSocket dataSocket= INVALID_SOCKET;
 
     if(passiveMode){
         string ret;
         int k = sendDataAndResponse(Server,"PASV",cmds[1],ret);
-         dataSocket= SocketConnect(ret,false);
+        dataSocket= SocketConnect(ret,false);
     }else{
         string ret;
-        cout<<cmds.size()<<endl;
-        cout<<cmds[1]<<endl;
         CurSocket CUR = CreateSocket(cmds[1],false);
-        if(CUR!=-1) {
+        if(CUR!=INVALID_SOCKET) {
             int k = sendDataAndResponse(Server, "PORT", cmds[1], ret);
             dataSocket = SocketAccept(CUR);
             CurClose(CUR);
@@ -245,7 +261,7 @@ void ftpClient::SendEnd() {
     string s;
     sendDataAndResponse(_socket,"QUIT","",s);
     CurClose(_socket);
-    _socket = -1;
+    _socket = INVALID_SOCKET;
 }
 void ftpClient::print_reply(int status,const string&rep) {
 
@@ -286,14 +302,11 @@ void ftpClient::print_reply(int status,const string&rep) {
         case 530:
             printf("530 Not logged in.\n");
             break;
-        case 550:
-            printf("550 request action not taken.file unavailable.\n");
-            break;
         case 553:
             printf("553 Could not file.\n");
             break;
         default:
-            printf("%d unknown error.\n",status);
+            printf("%d %s.\n",status,rep.c_str());
             break;
     }
 }
@@ -304,7 +317,7 @@ CurSocket ftpClient::openDataConnector(CurSocket sock_ctl){
     if(send(sock_ctl,(char*)&ack,sizeof(ack),0)<0)
     {
         printf("client:ack write error:%d\n",errno);
-        return -1;
+        return INVALID_SOCKET;
     }
     int sock_data=SocketAccept(sock_listen);
     CurClose(sock_listen);

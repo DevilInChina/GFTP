@@ -18,10 +18,11 @@ public:
     ~ftpServer();
 private:
     int CMD_List(CurSocket client,CurSocket dataSocket,const string&path);
+    int CMD_Cwd(CurSocket client, CurSocket dataSocket,const string&path,const string &mainPath,string &curPath);
     enum serverStatus{
         unLogin,IpConnectSucceed,CheckingPsd,Logined
     };
-    serverStatus curStatus;
+
     string serverIp;
 };
 #endif //GFTP_FTPSERVER_H

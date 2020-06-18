@@ -9,6 +9,7 @@ int main(int argc,char **argv) {
     WSADATA wsaData;
     WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
+    srand(time(nullptr));
     signal(SIGINT,sighandler);
     if(argc > 1){
         ftpServer s(argv[1],INFOPORT);

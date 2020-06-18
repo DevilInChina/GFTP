@@ -28,14 +28,20 @@
 #define CurSocket SOCKET
 #define CurClose closesocket
 #define socklen_t int
+#define FILESEPERATOR '\\'
 #else
 #define CurSocket int
 #define CurClose close
 #define SOCKET_ERROR (-1)
+#define FILESEPERATOR '/'
 #endif
 
 #ifndef SOCKADDR
 #define SOCKADDR sockaddr
+#endif
+
+#ifndef CMD_SUCCEED
+#define CMD_SUCCEED 0
 #endif
 
 #ifndef INVALID_SOCKET

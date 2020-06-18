@@ -12,7 +12,6 @@ ftpServer::ftpServer(const string&ip,int port):Connector(){
     CreateSocket(ip,port);
 
     this->serverIp = ip;
-    curStatus = unLogin;
 }
 void ftpServer::beginListen() {
     CurSocket sClient;
@@ -43,12 +42,14 @@ void ftpServer::beginProcess(CurSocket client) {
     if(!getpeername(client, (struct sockaddr *)&sa, &iplen)) {
         clientIP = inet_ntoa(sa.sin_addr);
     }
+
     send_response(client,220,clientIP);
-    curStatus = IpConnectSucceed;
-    string user,psd,workingPath;
+    serverStatus curStatus = IpConnectSucceed;
+    string user,psd,workingPath,curPath;
 
     int dataPort;
     bool passiveMode = true;
+    CurSocket dataSocketInProcess = INVALID_SOCKET;
     while (true) {
         int c = recv_data(client,revData,maxSize);
         if(c<=0)continue;
@@ -60,7 +61,6 @@ void ftpServer::beginProcess(CurSocket client) {
             send_response(client, 200);
             break;
         }
-        CurSocket dataSocket;
         switch (curStatus) {
             case IpConnectSucceed: {
                 if(cmds[0]=="USER") {
@@ -72,9 +72,10 @@ void ftpServer::beginProcess(CurSocket client) {
             case CheckingPsd:{
                 if(cmds[0]=="PASS") {
                     psd = cmds[1];
-                    if(checkUser(user,psd.workingPath)){
+                    if(checkUser(user,psd,workingPath)){
                         send_response(client,230);
                         curStatus = Logined;
+                        curPath = workingPath;
                     }else{
                         send_response(client,530);
                         curStatus = IpConnectSucceed;
@@ -83,38 +84,40 @@ void ftpServer::beginProcess(CurSocket client) {
             }break;
             case Logined:{
                 if(cmds[0]=="PASV" || cmds[0]=="PORT"){
-                    cout<<cmds[0]<<endl;
                     CurSocket sender = setPassiveMode(client,cmds,passiveMode,dataPort);
                     if(passiveMode) {/// pasv
-                        if (sender != -1) {
+                        if (sender != INVALID_SOCKET ) {
                             string ret = dealIp(serverIp) + "," + std::to_string(dataPort / 256) + "," +
                                          std::to_string(dataPort % 256);
                             send_response(client, 227, ret);
-                            dataSocket= SocketAccept(sender);
+                            dataSocketInProcess = SocketAccept(sender);
                             CurClose(sender);
                         } else {
-                            dataSocket = -1;
-                            send_response(client, 425);
+                            send_response(client, 425,"Cannot open data connection");
                         }
                     }else{//// port
-                        if (sender != -1) {
+                        if (sender != INVALID_SOCKET) {
                             send_response(client, 200, "PORT");
-                            //CurClose(sender);
-                            dataSocket = sender;
+                            dataSocketInProcess = sender;
                         } else {
                             send_response(client, 552);
                         }
                     }
                 }
                 else if(cmds[0]=="LIST") {
-                    send_response(client, 150);
-                    cout<<dataSocket<<endl;
-                    CMD_List(client, dataSocket, cmds[1]);
-                    CurClose(dataSocket);
-                    dataSocket = -1;
-                    send_response(client, 226);
+                    if(dataSocketInProcess != INVALID_SOCKET) {
+                        send_response(client, 150);
+                        CMD_List(client, dataSocketInProcess, curPath + "\\" + cmds[1]) ;
+
+                        CurClose(dataSocketInProcess);
+                        dataSocketInProcess = INVALID_SOCKET;
+                    }else{
+                        send_response(client, 426,"Data connection error");
+                    }
                 }else if(cmds[0]=="RETR"){
 
+                }else if(cmds[0]=="CWD"){
+                    CMD_Cwd(client, dataSocketInProcess, cmds[1],workingPath,curPath);
                 }
             }break;
         }
@@ -123,7 +126,7 @@ void ftpServer::beginProcess(CurSocket client) {
 }
 
 CurSocket ftpServer::setPassiveMode(CurSocket client, vector<string>&cmds,bool &res,int &port) {
-    CurSocket dataSocket = -1;
+    CurSocket dataSocket = INVALID_SOCKET;
     if (cmds[0] == "PASV") {
         int po = getRandomPort();
         res = true;
@@ -163,10 +166,6 @@ CurSocket ftpServer::startDataConnection(CurSocket client)
     inet_ntop(AF_INET,&client_addr.sin_addr,buf,sizeof(buf));
     CurSocket sock_data=SocketConnect(buf,client_addr.sin_port, false);
 #endif
-    if(sock_data<0)
-    {
-        return -1;
-    }
     return sock_data;
 }
 
@@ -175,6 +174,7 @@ ftpServer::~ftpServer() {}
 int ftpServer::CMD_List(CurSocket client, CurSocket dataSocket,const string&path) {
     string CMDS;
     string del;
+    cout<<path<<endl;
 #ifdef WIN32
     CMDS = "dir ";
     del = "del ";
@@ -186,29 +186,96 @@ int ftpServer::CMD_List(CurSocket client, CurSocket dataSocket,const string&path
     string ClearCmd = del + fileName;
     CMDS += path;
     CMDS += " >> " + fileName;
-    system(CMDS.c_str());
-    ifstream ff(fileName);
-    string res;
-    string temp;
+    int k = system(CMDS.c_str());
+    if(k==CMD_SUCCEED) {
+        ifstream ff(fileName);
+        string res;
+        string temp;
 #ifdef WIN32
-    while (getline(ff, temp)) {
-        if (!isdigit(temp[0]))continue;///not a file in windows
-        stringstream ss(temp);
-        for (int i = 0; i < 5; ++i) {
-            ss >> temp;
+        while (getline(ff, temp)) {
+            if (!isdigit(temp[0]))continue;///not a file in windows
+            stringstream ss(temp);
+            for (int i = 0; i < 5; ++i) {
+                ss >> temp;
+            }
+            if (temp != "." && temp != ".." && temp != fileName && !temp.empty() && temp != AUTH)
+                res += temp + "\n";
         }
-        if (temp != "." && temp != ".." && temp != fileName && !temp.empty() && temp != AUTH)
-            res += temp + "\n";
-    }
 #else
-    while (getline(ff,temp)) {
-        if (temp != "." && temp != ".." && temp != fileName && !temp.empty() && temp!=AUTH)
-            res += temp + "\n";
-    }
+        while (getline(ff,temp)) {
+            if (temp != "." && temp != ".." && temp != fileName && !temp.empty() && temp!=AUTH)
+                res += temp + "\n";
+        }
 #endif
-    cout << res << endl;
-    sendBigData(dataSocket, res.c_str(), res.length());
-    ff.close();
-    system(ClearCmd.c_str());
-    return 1;
+
+        sendBigData(dataSocket, res.c_str(), res.length());
+        send_response(client, 226);
+        ff.close();
+        system(ClearCmd.c_str());
+        return 1;
+    }else{
+        sendBigData(dataSocket, nullptr, 0);
+        send_response(client, 551,"File listing failed");
+        system(ClearCmd.c_str());
+        return 0;
+    }
 }
+void trimDic(string &curPath){
+    stringstream s(curPath);
+    string f;
+#ifdef WIN32
+    getline(s,f,FILESEPERATOR);
+#else
+#endif
+    string temp;
+    vector<string>ss;
+    while (getline(s,temp,FILESEPERATOR)){
+        if(temp=="..") {
+            if(!ss.empty()){
+                ss.pop_back();
+            }
+        }else{
+            if(temp!="." && !temp.empty()) {
+                ss.push_back(temp);
+            }
+        }
+    }
+    for(auto const &it:ss){
+        f+=FILESEPERATOR+it;
+    }
+    curPath = f;
+}
+
+int ftpServer::CMD_Cwd(CurSocket client, CurSocket dataSocket,const string&path,const string &mainPath,string &curPath) {
+    string CMDS;
+    string del;
+    cout<<path<<endl;
+#ifdef WIN32
+    CMDS = "cd ";
+    del = "del ";
+#else
+    CMDS="cd ";
+    del = "rm ";
+#endif
+    if(path==".") {
+        send_response(client, 250, "CWD COMMAND OK");
+        return true;
+    }else if (path.size()==1 && path[0]==FILESEPERATOR){
+        curPath=mainPath;
+        send_response(client, 250, "CWD COMMAND OK");
+        return true;
+    }
+    CMDS+=curPath+FILESEPERATOR+path;
+    int k = system(CMDS.c_str());
+    cout<<k<<endl;
+    if(k==CMD_SUCCEED) {
+        curPath = curPath+FILESEPERATOR+path;
+        trimDic(curPath);
+        send_response(client, 250, "CWD COMMAND OK");
+    }else{
+        send_response(client, 550, "No such dic");
+        return false;
+    }
+    return true;
+}
+

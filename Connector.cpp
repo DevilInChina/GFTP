@@ -40,12 +40,13 @@ CurSocket Connector::CreateSocket(const string &ip, int port,bool changeSelf) {
     if((ip.empty()) || (port<0))
     {
         //print_log()
-        return -1;
+        return INVALID_SOCKET;
     }
     CurSocket sock =socket(AF_INET,SOCK_STREAM,0);
-    if(sock<0 || (sock==INVALID_SOCKET)){
+
+    if(sock==INVALID_SOCKET){
         //print_log();
-        return -1;
+        return INVALID_SOCKET;
     }
 
     int op=1;
@@ -63,13 +64,15 @@ CurSocket Connector::CreateSocket(const string &ip, int port,bool changeSelf) {
     if(bind(sock,(struct sockaddr*)&local,sizeof(local))<0)
     {
         //print_log();
-        return -1;
+        CurClose(sock);
+        return INVALID_SOCKET;
     }
 
     if(listen(sock,5)<0)
     {
         //print_log();
-        return -1;
+        CurClose(sock);
+        return INVALID_SOCKET;
     }
     if(changeSelf)_socket = sock;
     return sock;
@@ -85,20 +88,16 @@ CurSocket Connector::SocketAccept(CurSocket sock) {
     struct sockaddr_in peer;
     int len=sizeof(peer);
     CurSocket connfd=accept(sock,(struct sockaddr*)&peer,(socklen_t*)&len);
-    if(connfd<0)
-    {
-        return -1;
-    }
     return connfd;
 }
 CurSocket Connector::SocketConnect(const string &ip, int port,bool changeSelf) {
     if(port<0 || ip.empty())
-        return -1;
+        return INVALID_SOCKET;
     CurSocket ret = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if(ret == INVALID_SOCKET)
     {
         printf("invalid socket!");
-        return -1;
+        return INVALID_SOCKET;
     }
 
     sockaddr_in serAddr;
@@ -108,7 +107,7 @@ CurSocket Connector::SocketConnect(const string &ip, int port,bool changeSelf) {
     if(connect(ret, (sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
     {  //连接失败
         printf("%s %d connect error !\n",ip.c_str(),port);
-        return -1;
+        return INVALID_SOCKET;
     }
     if(changeSelf)_socket = ret;
     return ret;
