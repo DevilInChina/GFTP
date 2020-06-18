@@ -1,3 +1,0 @@
-/home/devilinchina/GFTP/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/devilinchina/GFTP/cmake-build-debug/CMakeFiles/GFTP.dir
-/home/devilinchina/GFTP/cmake-build-debug/CMakeFiles/edit_cache.dir
