@@ -336,7 +336,9 @@ long long Connector::analyseSize(const string &path) {
 #else
     while (getline(ff,temp)) {
         stringstream ss(temp);
-        for (int i = 0;ss>>temp && i < 4; ++i) {}
+        for (int i = 0;ss>>temp && i < 4; ++i) {
+            cout<<temp<<endl;
+        }
         return atoll(temp.c_str());
     }
 #endif
@@ -494,9 +496,18 @@ int Connector::recvFile(CurSocket sock, const string &paths,int Encodes) {
 }
 #else
 int Connector::sendFile(CurSocket sock, const string &paths,int Encodes){
-
+    int fileSize = getFileSize(paths,Encodes);
+    int file_fd = open(paths.c_str(),O_RDONLY);
+    cout<<fileSize<<" "<<file_fd<<" "<<sock<<endl;
+    sendSize(sock,fileSize);
+    cout<<sendfile(file_fd,sock, nullptr,fileSize)<<endl;
 }
 int Connector::recvFile(CurSocket sock, const string &paths,int Encodes){
+    int fileSize = recvSize(sock);
+
+    int file_fd = open(paths.c_str(),O_CREAT|O_WRONLY);
+    cout<<fileSize<<" "<<file_fd<<" "<<sock<<endl;
+    cout<<sendfile(sock,file_fd, nullptr,fileSize)<<endl;
 
 }
 #endif

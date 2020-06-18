@@ -23,7 +23,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
+#include <sys/sendfile.h>
 #include <zconf.h>
+#include <fcntl.h>
 #endif
 
 #ifdef  WIN32
