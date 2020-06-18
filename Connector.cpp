@@ -500,14 +500,15 @@ int Connector::sendFile(CurSocket sock, const string &paths,int Encodes){
     int file_fd = open(paths.c_str(),O_RDONLY);
     cout<<fileSize<<" "<<file_fd<<" "<<sock<<endl;
     sendSize(sock,fileSize);
-    cout<<sendfile(file_fd,sock, nullptr,fileSize)<<endl;
+    cout<<sendfile(sock,file_fd, nullptr,fileSize)<<endl;
+    close(file_fd);
 }
 int Connector::recvFile(CurSocket sock, const string &paths,int Encodes){
-    int fileSize = recvSize(sock);
-
-    int file_fd = open(paths.c_str(),O_CREAT|O_WRONLY);
-    cout<<fileSize<<" "<<file_fd<<" "<<sock<<endl;
-    cout<<sendfile(sock,file_fd, nullptr,fileSize)<<endl;
-
+    int fileSize;
+    char *s = recvBigData(sock,fileSize);
+    fstream f(paths,ios::out);
+    f.write(s,fileSize);
+    delete s;
+    f.close();
 }
 #endif
