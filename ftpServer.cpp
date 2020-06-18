@@ -316,16 +316,20 @@ int ftpServer::CMD_Stor(CurSocket client, CurSocket dataSocket, const string &pa
     send_response(client,226);
     return 1;
 }
+#ifdef WIN32
 DWORD WINAPI ftpServer::proc(LPVOID lpParamter)
 {
     CurSocket s =((CurSocket)lpParamter);
-    cout<<"in:"<<s<<endl;
     beginProcess(s);
     return 0L;
 }
 
 void ftpServer::BeginThread(CurSocket sClient) {
-    cout<<"out:"<<sClient<<endl;
     HANDLE hThread = CreateThread(NULL, 0, proc, (LPVOID)sClient, 0, NULL);
     CloseHandle(hThread);
 }
+#else
+void ftpServer::BeginThread(CurSocket sClient) {
+
+}
+#endif

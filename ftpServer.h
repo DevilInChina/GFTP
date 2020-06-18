@@ -32,9 +32,9 @@ private:
 
     static long long CMD_Size(CurSocket client, CurSocket dataSocket, const string &path);
 
+    void BeginThread(CurSocket sClient);
 #ifdef WIN32
     static DWORD WINAPI proc(LPVOID lpParamter);
-    void BeginThread(CurSocket sClient);
 #else
 #endif
 
