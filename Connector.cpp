@@ -7,7 +7,7 @@ using namespace std;
 
 #include "Connector.h"
 
-void dealIPinfo(const string &ipPortInfo,string &ip,int &port){
+void Connector::dealIPinfo(const string &ipPortInfo,string &ip,int &port){
     string info = ipPortInfo;
     replace(info.begin(),info.end(),',','.');
     int cnt = 0;
@@ -30,7 +30,12 @@ void dealIPinfo(const string &ipPortInfo,string &ip,int &port){
     port<<=8;
     port+=atoi(b.c_str());
 }
-
+void Connector::encoIPinfo(string &ipPortInfo, const string &ip, int port) {
+    ipPortInfo = ip;
+    replace(ipPortInfo.begin(),ipPortInfo.end(),'.',',');
+    ipPortInfo+=","+to_string(port/256);
+    ipPortInfo+=","+to_string(port%256);
+}
 CurSocket Connector::CreateSocket(const string &ip, int port,bool changeSelf) {
     if((ip.empty()) || (port<0))
     {
@@ -265,9 +270,8 @@ int Connector::sendSize(CurSocket sock, int size){
 }
 int Connector::recvSize(CurSocket sock){
     int recv;
-    puts("\nBefrecSize");
-    while (recv_data(sock, (char*)&recv, sizeof(recv)) <= 0){
-    }
+    while (recv_data(sock, (char*)&recv, sizeof(recv)) <= 0){}
+
     recv = ntohl(recv);
     return recv;
 }
@@ -306,19 +310,9 @@ char* Connector::recvBigData(CurSocket sock, int&length) {
     ret[length ] = 0;
     return ret;
 }
-string Connector::GetSelfIp() {
-#ifdef WIN32
-    PHOSTENT hostinfo;
-    char name[123];
-    if (gethostname(name, sizeof(name)) == 0) {
-        if ((hostinfo = gethostbyname(name)) != NULL) {
-            char *ips = inet_ntoa(*(struct in_addr *) *(hostinfo->h_addr_list+1));
-            string ret(ips);
-            free(ips);
-            return ret;
-        }
-    }
-#else
 
-#endif
+int Connector::getRandomPort() {
+    int po = (GETRAND(65535)) + 1024;
+    po = min(65534, po);
+    return po;
 }

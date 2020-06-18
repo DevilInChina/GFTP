@@ -11,7 +11,7 @@ int main(int argc,char **argv) {
 #endif
     signal(SIGINT,sighandler);
     if(argc > 1){
-        ftpServer s("192.168.2.100",INFOPORT);
+        ftpServer s(argv[1],INFOPORT);
         cout<<"start linsen "<<s._socket<<endl;
         s.beginListen();
     }else{

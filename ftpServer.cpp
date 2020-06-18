@@ -8,8 +8,6 @@
 #include <vector>
 #include <sstream>
 #include <ctime>
-#include <random>
-#define GETRAND(x) (rand()%(x))
 ftpServer::ftpServer(const string&ip,int port):Connector(){
     CreateSocket(ip,port);
 
@@ -20,6 +18,7 @@ void ftpServer::beginListen() {
     CurSocket sClient;
     sockaddr_in remoteAddr;
     int nAddrlen = sizeof(remoteAddr);
+
 
     while (true){
         sClient = accept(_socket, (SOCKADDR *)&remoteAddr, (socklen_t*)&nAddrlen);
@@ -38,9 +37,16 @@ string dealIp(const string &ip){
 }
 void ftpServer::beginProcess(CurSocket client) {
     char revData[maxSize];
-    send_response(client,220);
+    struct sockaddr_in sa;
+    int iplen = sizeof(sa);
+    string clientIP ;
+    if(!getpeername(client, (struct sockaddr *)&sa, &iplen)) {
+        clientIP = inet_ntoa(sa.sin_addr);
+    }
+    send_response(client,220,clientIP);
     curStatus = IpConnectSucceed;
-    string user,psd;
+    string user,psd,workingPath;
+
     int dataPort;
     bool passiveMode = true;
     while (true) {
@@ -54,7 +60,6 @@ void ftpServer::beginProcess(CurSocket client) {
             send_response(client, 200);
             break;
         }
-        cout<<curStatus<<" "<<s<<endl;
         CurSocket dataSocket;
         switch (curStatus) {
             case IpConnectSucceed: {
@@ -67,7 +72,7 @@ void ftpServer::beginProcess(CurSocket client) {
             case CheckingPsd:{
                 if(cmds[0]=="PASS") {
                     psd = cmds[1];
-                    if(checkUser(user,psd)){
+                    if(checkUser(user,psd.workingPath)){
                         send_response(client,230);
                         curStatus = Logined;
                     }else{
@@ -94,20 +99,22 @@ void ftpServer::beginProcess(CurSocket client) {
                     }else{//// port
                         if (sender != -1) {
                             send_response(client, 200, "PORT");
-                            CurClose(sender);
+                            //CurClose(sender);
+                            dataSocket = sender;
                         } else {
                             send_response(client, 552);
                         }
                     }
                 }
-                else if(cmds[0]=="LIST"){
-                    if(passiveMode) {
-                        send_response(client, 150);
-                        CMD_List(client, dataSocket, cmds[1]);
-                        CurClose(dataSocket);
-                        dataSocket = -1;
-                        send_response(client, 226);
-                    }
+                else if(cmds[0]=="LIST") {
+                    send_response(client, 150);
+                    cout<<dataSocket<<endl;
+                    CMD_List(client, dataSocket, cmds[1]);
+                    CurClose(dataSocket);
+                    dataSocket = -1;
+                    send_response(client, 226);
+                }else if(cmds[0]=="RETR"){
+
                 }
             }break;
         }
@@ -118,11 +125,9 @@ void ftpServer::beginProcess(CurSocket client) {
 CurSocket ftpServer::setPassiveMode(CurSocket client, vector<string>&cmds,bool &res,int &port) {
     CurSocket dataSocket = -1;
     if (cmds[0] == "PASV") {
-        int po = (GETRAND(65535)) + 1024;
-        po = min(65534, po);
+        int po = getRandomPort();
         res = true;
         dataSocket = CreateSocket(serverIp, po, false);
-
         port = po;
     } else if (cmds[0] == "PORT") {
         res = false;
@@ -131,10 +136,10 @@ CurSocket ftpServer::setPassiveMode(CurSocket client, vector<string>&cmds,bool &
     return dataSocket;
 }
 
-bool ftpServer::checkUser(const string &user, const string &psd) {
-    ifstream fin("data.txt");
+bool ftpServer::checkUser(const string &user, const string &psd,string &wd) {
+    ifstream fin(AUTH);
     string username,password;
-    while (fin>>username>>password){
+    while (fin>>username>>password>>wd){
         if(username==user){
             if(Encode(password)==psd){
                 return true;
@@ -171,38 +176,38 @@ int ftpServer::CMD_List(CurSocket client, CurSocket dataSocket,const string&path
     string CMDS;
     string del;
 #ifdef WIN32
-    CMDS="dir ";
+    CMDS = "dir ";
     del = "del ";
 #else
     CMDS="ls ";
     del = "rm ";
 #endif
-    string fileName = ".LIST"+to_string(client+dataSocket);
-    string ClearCmd = del+fileName;
-    CMDS+=path;
-    CMDS+=" >> "+fileName;
+    string fileName = ".LIST" + to_string(client + dataSocket);
+    string ClearCmd = del + fileName;
+    CMDS += path;
+    CMDS += " >> " + fileName;
     system(CMDS.c_str());
     ifstream ff(fileName);
     string res;
     string temp;
 #ifdef WIN32
-    while (getline(ff,temp)) {
+    while (getline(ff, temp)) {
         if (!isdigit(temp[0]))continue;///not a file in windows
         stringstream ss(temp);
         for (int i = 0; i < 5; ++i) {
             ss >> temp;
         }
-        if (temp != "." && temp != ".." && temp != fileName && !temp.empty())
+        if (temp != "." && temp != ".." && temp != fileName && !temp.empty() && temp != AUTH)
             res += temp + "\n";
     }
 #else
     while (getline(ff,temp)) {
-        if (temp != "." && temp != ".." && temp != fileName)
+        if (temp != "." && temp != ".." && temp != fileName && !temp.empty() && temp!=AUTH)
             res += temp + "\n";
     }
 #endif
-    cout<<res<<endl;
-    sendBigData(dataSocket,res.c_str(),res.length());
+    cout << res << endl;
+    sendBigData(dataSocket, res.c_str(), res.length());
     ff.close();
     system(ClearCmd.c_str());
     return 1;

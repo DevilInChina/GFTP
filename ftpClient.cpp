@@ -27,6 +27,15 @@ ftpClient::ftpClient(int port):port(port) {
     dataTransferCmds.insert("ls");
     dataTransferCmds.insert("get");
     dataTransferCmds.insert("put");
+
+    totalCmds.insert(dataTransferCmds.begin(),dataTransferCmds.end());
+    totalCmds.insert("?");
+    totalCmds.insert("help");
+    totalCmds.insert("user");
+    totalCmds.insert("passive");
+    totalCmds.insert("bye");
+    totalCmds.insert("quit");
+    totalCmds.insert("open");
 }
 
 int ftpClient::Connect(const string &ip) {
@@ -36,6 +45,10 @@ int ftpClient::Connect(const string &ip) {
     }
     string s;
     recResponse(_socket,s);
+    if(clientIp.empty()) {
+        clientIp = s;
+    }
+
     return 1;
 }
 ftpClient::~ftpClient() {
@@ -44,114 +57,142 @@ ftpClient::~ftpClient() {
     }
 }
 
+void printHelp(const set<string>&s){
+    for(auto &it:s){
+        cout<<it<<"\t\t";
+    }
+    cout<<'\n';
+}
 void ftpClient::beginProcess() {
-    string cmd,sig;
-    cout<<"ftp<";
+    string cmd, sig;
+    cout << "ftp<";
     string ret;
     CurSocket DataSocket = -1;
     while (true) {
-        getline(cin,cmd);
+        getline(cin, cmd);
         stringstream sin(cmd);
-        vector<string>cmds;
-        while (sin>>sig)cmds.push_back(sig);
-        if(cmds.empty())continue;
+        vector<string> cmds;
+        while (sin >> sig)cmds.push_back(sig);
+        if (cmds.empty())continue;
         int cur = 0;
-        if(cmds[0]=="bye" || cmds[0]=="quit") {
+        if (cmds[0] == "bye" || cmds[0] == "quit") {
             /// tell server close
             SendEnd();
             return;
         }
-
-        if(curStatus==Logined){
-            if(dataTransferCmds.count(cmds[0])) {
+        if(!totalCmds.count(cmds[0])){
+            cout<<"invalid commands?"<<endl;
+            continue;
+        }else if(cmds[0]=="?" || cmds[0]=="help"){
+            printHelp(totalCmds);
+        }
+        if (curStatus == Logined) {
+            if (dataTransferCmds.count(cmds[0])) {
                 vector<string> CMDS;
                 CMDS.emplace_back((passiveMode ? "PASV" : "PORT"));
                 if (!passiveMode) {/// port
-
-                    CMDS.emplace_back("ima no ip");/// ip to port info
+                    int Port = getRandomPort();
+                    string senderInfo;
+                    if (!clientIp.empty()) {
+                        encoIPinfo(senderInfo, clientIp, Port);
+                        CMDS.push_back(senderInfo);
+                        DataSocket = buildDataConnector(_socket, CMDS);
+                    } else {
+                        DataSocket = -1;
+                    }
                 } else {
                     CMDS.emplace_back("");
+                    DataSocket = buildDataConnector(_socket, CMDS);
                 }
-
-
-                DataSocket = buildDataConnector(_socket, CMDS);
             }
         }
         switch (curStatus) {
             case unLogin: {
-                if (cmds[0] == "open")
+                if (cmds[0] == "open") {
                     if (Connect(cmds[1])) {
                         curStatus = IpConnectSucceed;
                         cout << "Name (" << cmds[1] << "):";
                     } else {
 
                     }
-            }break;
-            case IpConnectSucceed:{
-                if(lastResponse!=220){
-                    if(cmds[0]=="user"){
-                        switch (cmds.size()){
+                }else{
+                    cout<<"Not connected."<<endl;
+                }
+            }
+                break;
+            case IpConnectSucceed: {
+                if (lastResponse != 220) {
+                    if (cmds[0] == "user") {
+                        switch (cmds.size()) {
                             case 2: {
-                                sendDataAndResponse(_socket, "USER",cmds[1],ret);
+                                sendDataAndResponse(_socket, "USER", cmds[1], ret);
                                 if (lastResponse == 331) {
                                     cout << "Passwords:";
                                     curStatus = CheckingPsd;
                                 }
-                            }break;
+                            }
+                                break;
 
                             case 3: {
-                                sendDataAndResponse(_socket,"USER", cmds[1],ret);
+                                sendDataAndResponse(_socket, "USER", cmds[1], ret);
                                 string code = Encode(cmds[2]);
-                                sendDataAndResponse(_socket,"PASS", code,ret);
+                                sendDataAndResponse(_socket, "PASS", code, ret);
                                 if (lastResponse == 230) {
                                     curStatus = Logined;
                                 } else {
                                     curStatus = IpConnectSucceed;
                                 }
-                            }break;
+                            }
+                                break;
                             default:
-                                cout<<"usage: user username [password]\n";
+                                cout << "usage: user username [password]\n";
                                 break;
                         }
                     }
-                }else {///login no toki hajime de username
-                    sendDataAndResponse(_socket, "USER",cmds[0],ret);
-                    if(lastResponse==331) {
+                    else {
+                        cout << "Not connected." << endl;
+                    }
+                } else {///login no toki hajime de username
+                    sendDataAndResponse(_socket, "USER", cmds[0], ret);
+                    if (lastResponse == 331) {
                         cout << "Passwords:";
                         curStatus = CheckingPsd;
                     }
                 }
-            }break;
-            case CheckingPsd:{
+            }
+                break;
+            case CheckingPsd: {
                 string code = Encode(cmd);
-                sendDataAndResponse(_socket,"PASS", code,ret);
-                if(lastResponse==230){
+                sendDataAndResponse(_socket, "PASS", code, ret);
+                if (lastResponse == 230) {
                     curStatus = Logined;
-                }else{
+                } else {
                     curStatus = IpConnectSucceed;
                 }
-            }break;
-            case Logined:{
-                if(cmd=="passive"){
+            }
+                break;
+            case Logined: {
+                if (cmd == "passive") {
                     passiveMode = !passiveMode;
-                    cout<<"passive mode "<<(passiveMode?"On":"Off")<<"\n";
-                }else if(cmds[0]=="ls"){
+                    cout << "passive mode " << (passiveMode ? "On" : "Off") << "\n";
+                } else if (cmds[0] == "ls") {
+                    if (DataSocket == -1) {
+                        cout << (passiveMode ? "PASV" : "PORT") << " connect faild" << endl;
+                        break;
+                    }
                     if (cmds.size() == 1) cmds.emplace_back(".");
                     sendDataAndResponse(_socket, "LIST", cmds[1], ret);
-                    if(passiveMode) {
-                        int length;
-                        char *s = recvBigData(DataSocket, length);
-                        cout << s << endl;
-                        recResponse(_socket, ret);///recive 226
-                    }else{
+                    int length;
+                    char *s = recvBigData(DataSocket, length);
+                    cout << s << endl;
+                    recResponse(_socket, ret);///recive 226
+                } else if (cmds[0] == "get") {
 
-                    }
-                }else if(cmds[0]=="get"){
-
-                }else if(cmds[0]=="put"){
+                } else if (cmds[0] == "put") {
 
                 }
-            }break;
+            }
+                break;
         }
     }
 }
@@ -165,11 +206,13 @@ CurSocket ftpClient::buildDataConnector(CurSocket Server,vector<string>&cmds){
          dataSocket= SocketConnect(ret,false);
     }else{
         string ret;
-        dataSocket = CreateSocket(cmds[1],false);
-        if(dataSocket!=-1) {
-
+        cout<<cmds.size()<<endl;
+        cout<<cmds[1]<<endl;
+        CurSocket CUR = CreateSocket(cmds[1],false);
+        if(CUR!=-1) {
             int k = sendDataAndResponse(Server, "PORT", cmds[1], ret);
-
+            dataSocket = SocketAccept(CUR);
+            CurClose(CUR);
         }
     }
     return dataSocket;
@@ -211,10 +254,10 @@ void ftpClient::print_reply(int status,const string&rep) {
     switch(status)
     {
         case 150:
-            printf("%d Opening data connection.",status);
+            printf("%d Opening data connection.\n",status);
             break;
         case 200:
-            printf("%d Command %s okay.",status,rep.c_str());
+            printf("%d Command %s okay.\n",status,rep.c_str());
             break;
         case 220:
             printf("220 welcome,server ready.\n");
@@ -229,7 +272,7 @@ void ftpClient::print_reply(int status,const string&rep) {
             printf("%d Entering Passive Mode.(%s).\n",status,rep.c_str());
         }break;
         case 230:
-            printf("%d User logged in, proceed. Logged out if appropriate.",status);
+            printf("%d User logged in, proceed. Logged out if appropriate.\n",status);
             break;
         case 331:
             printf("331 Please specify the password.\n");

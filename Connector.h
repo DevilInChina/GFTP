@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <vector>
 #include <set>
+#include <random>
+#define GETRAND(x) (rand()%(x))
 #ifdef  WIN32
 #include  <winsock.h>
 #else
@@ -41,6 +43,7 @@
 #endif
 #define INFOPORT 1521
 #define DATAPORT 1520
+#define AUTH ".AUTH"
 using namespace std;
 class Connector {
 public:
@@ -66,9 +69,13 @@ public:
 
     char* recvBigData(CurSocket sock,int &length);
 
-    string GetSelfIp();
+    void dealIPinfo(const string &ipPortInfo,string &ip,int &port);
+
+    void encoIPinfo(string &ipPortInfo,const string &ip,int port);
 
     string Encode(const string &a);
+
+    int getRandomPort();
 
     CurSocket _socket;
     const int maxSize = 255;

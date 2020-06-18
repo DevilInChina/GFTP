@@ -12,7 +12,7 @@ public:
     ftpServer(const string &ip,int port);
     void beginListen();
     void beginProcess(CurSocket client);
-    bool checkUser(const string&user,const string &psd);
+    bool checkUser(const string&user,const string &psd,string &wd);
     CurSocket startDataConnection(CurSocket client);
     CurSocket setPassiveMode(CurSocket client, vector<string> &cmds,bool &res,int &po);
     ~ftpServer();

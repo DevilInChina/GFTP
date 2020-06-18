@@ -26,13 +26,14 @@ private:
     enum Status {
         unLogin, IpConnectSucceed, CheckingPsd, Logined
     };
-    string ip;
+    string clientIp;
     int Retcode;
     int port;
     Status curStatus;
     int lastResponse;
     bool passiveMode = true;
     set<string>dataTransferCmds;
+    set<string>totalCmds;
     int sendDataAndResponse(CurSocket sock, const string &cmd, const string &parameter,string &ret);
 
     int sendDataAndResponse(CurSocket sock, const char *buff, int buffsize,string &ret);
