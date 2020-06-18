@@ -39,7 +39,7 @@ void ftpServer::beginProcess(CurSocket client) {
     struct sockaddr_in sa;
     int iplen = sizeof(sa);
     string clientIP ;
-    if(!getpeername(client, (struct sockaddr *)&sa, &iplen)) {
+    if(!getpeername(client, (struct sockaddr *)&sa, (socklen_t*)&iplen)) {
         clientIP = inet_ntoa(sa.sin_addr);
     }
 
