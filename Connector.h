@@ -54,58 +54,58 @@
 #define INFOPORT 1521
 #define DATAPORT 1520
 #define AUTH ".AUTH"
+#define maxSize 255
 using namespace std;
 class Connector {
 public:
-    CurSocket CreateSocket(const string &ip, int port, bool changeSelf = true);
+    static CurSocket CreateSocket(const string &ip, int port, bool changeSelf = true);
 
-    CurSocket CreateSocket(const string &ipPortInfo, bool changeSelf = true);
+    static CurSocket CreateSocket(const string &ipPortInfo, bool changeSelf = true);
 
-    CurSocket SocketAccept(CurSocket sock);
+    static CurSocket SocketAccept(CurSocket sock);
 
-    CurSocket SocketConnect(const string &ipPortInfo, bool changeSelf = true);
+    static CurSocket SocketConnect(const string &ipPortInfo, bool changeSelf = true);
 
-    CurSocket SocketConnect(const string &ip, int port, bool changeSelf = true);
+    static CurSocket SocketConnect(const string &ip, int port, bool changeSelf = true);
 
-    int recv_data(CurSocket sock, char *buf, unsigned long bufsize);
+    static int recv_data(CurSocket sock, char *buf, unsigned long bufsize);
 
-    int send_response(CurSocket sock, int code, const string &resp = "");
+    static int send_response(CurSocket sock, int code, const string &resp = "");
 
-    int send_data(CurSocket sock, const char *buff, int bufsize);
+    static int send_data(CurSocket sock, const char *buff, int bufsize);
 
-    int send_data(CurSocket sock, const string &s);
+    static int send_data(CurSocket sock, const string &s);
 
-    int sendBigData(CurSocket sock, const char *s, int length);
+    static int sendBigData(CurSocket sock, const char *s, int length);
 
-    char *recvBigData(CurSocket sock, int &length);
-    char *alloc_recv_data(CurSocket sock, int length);
-    int sendFile(CurSocket sock,const string &path,int Encodes);
+    static char *recvBigData(CurSocket sock, int &length);
+    static char *alloc_recv_data(CurSocket sock, int length);
+    static int sendFile(CurSocket sock,const string &path,int Encodes);
 
-    int recvFile(CurSocket sock,const string &path,int Encodes);
+    static int recvFile(CurSocket sock,const string &path,int Encodes);
 
-    void dealIPinfo(const string &ipPortInfo, string &ip, int &port);
+    static void dealIPinfo(const string &ipPortInfo, string &ip, int &port);
 
-    void encoIPinfo(string &ipPortInfo, const string &ip, int port);
+    static void encoIPinfo(string &ipPortInfo, const string &ip, int port);
 
-    string Encode(const string &a);
+    static string Encode(const string &a);
 
 
-    long long getFileSize(const string &path,int Encode);
+    static long long getFileSize(const string &path,int Encode);
 
-    int getRandomPort();
+    static int getRandomPort();
 
     CurSocket _socket;
-    const int maxSize = 255;
     const int BlockSize = 4096;
 
 private:
-    int sendSize(CurSocket sock, int size);
+    static int sendSize(CurSocket sock, int size);
 
-    int recvSize(CurSocket sock);
+    static int recvSize(CurSocket sock);
 
-    int isDictionary(const string &path);
+    static int isDictionary(const string &path);
 
-    long long analyseSize(const string &path);
+    static long long analyseSize(const string &path);
 };
 
 

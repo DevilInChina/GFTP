@@ -52,11 +52,7 @@ CurSocket Connector::CreateSocket(const string &ip, int port,bool changeSelf) {
     }
 
     int op=1;
-    try {
-        setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,(char*)&op,sizeof(op));
-    }catch (int s){
-
-    }
+    setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,(char*)&op,sizeof(op));
 
     struct sockaddr_in local;
     local.sin_family=AF_INET;
@@ -76,7 +72,6 @@ CurSocket Connector::CreateSocket(const string &ip, int port,bool changeSelf) {
         CurClose(sock);
         return INVALID_SOCKET;
     }
-    if(changeSelf)_socket = sock;
     return sock;
 }
 
@@ -111,7 +106,6 @@ CurSocket Connector::SocketConnect(const string &ip, int port,bool changeSelf) {
         printf("%s %d connect error !\n",ip.c_str(),port);
         return INVALID_SOCKET;
     }
-    if(changeSelf)_socket = ret;
     return ret;
 }
 

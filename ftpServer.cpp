@@ -7,25 +7,26 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include <thread>
 #include <ctime>
 ftpServer::ftpServer(const string&ip,int port):Connector(){
-    CreateSocket(ip,port);
+    _socket=CreateSocket(ip,port);
 
-    this->serverIp = ip;
+    serverIp = ip;
 }
 void ftpServer::beginListen() {
     CurSocket sClient;
     sockaddr_in remoteAddr;
     int nAddrlen = sizeof(remoteAddr);
-
-
     while (true){
         sClient = accept(_socket, (SOCKADDR *)&remoteAddr, (socklen_t*)&nAddrlen);
         if(sClient == INVALID_SOCKET)
         {
             continue;
         }else{
-            beginProcess(sClient);////Thread or Fork
+            BeginThread(sClient);
+            //thread s(beginProcess,sClient);
+            //beginProcess(sClient);////Thread or Fork
         }
     }
 }
@@ -42,7 +43,6 @@ void ftpServer::beginProcess(CurSocket client) {
     if(!getpeername(client, (struct sockaddr *)&sa, (socklen_t*)&iplen)) {
         clientIP = inet_ntoa(sa.sin_addr);
     }
-
     send_response(client,220,clientIP);
     serverStatus curStatus = IpConnectSucceed;
     string user,psd,workingPath,curPath;
@@ -141,7 +141,7 @@ void ftpServer::beginProcess(CurSocket client) {
     CurClose(client);
 }
 
-CurSocket ftpServer::setPassiveMode(CurSocket client, vector<string>&cmds,bool &res,int &port) {
+ CurSocket ftpServer::setPassiveMode(CurSocket client, vector<string>&cmds,bool &res,int &port) {
     CurSocket dataSocket = INVALID_SOCKET;
     if (cmds[0] == "PASV") {
         int po = getRandomPort();
@@ -168,29 +168,12 @@ bool ftpServer::checkUser(const string &user, const string &psd,string &wd) {
     return false;
 }
 
-CurSocket ftpServer::startDataConnection(CurSocket client)
-{
-    char buf[1024];
-    struct sockaddr_in client_addr;
-    socklen_t len=sizeof(client_addr);
-    getpeername(client,(struct sockaddr*)&client_addr,&len);
-#ifdef WIN32
-    char *ip = inet_ntoa(client_addr.sin_addr);
-    CurSocket sock_data=SocketConnect(ip,client_addr.sin_port, false);
-    free(ip);
-#else
-    inet_ntop(AF_INET,&client_addr.sin_addr,buf,sizeof(buf));
-    CurSocket sock_data=SocketConnect(buf,client_addr.sin_port, false);
-#endif
-    return sock_data;
-}
 
 ftpServer::~ftpServer() {}
 
 int ftpServer::CMD_List(CurSocket client, CurSocket dataSocket,const string&path) {
     string CMDS;
     string del;
-    cout<<path<<endl;
 #ifdef WIN32
     CMDS = "dir ";
     del = "del ";
@@ -332,4 +315,17 @@ int ftpServer::CMD_Stor(CurSocket client, CurSocket dataSocket, const string &pa
 
     send_response(client,226);
     return 1;
+}
+DWORD WINAPI ftpServer::proc(LPVOID lpParamter)
+{
+    CurSocket s =((CurSocket)lpParamter);
+    cout<<"in:"<<s<<endl;
+    beginProcess(s);
+    return 0L;
+}
+
+void ftpServer::BeginThread(CurSocket sClient) {
+    cout<<"out:"<<sClient<<endl;
+    HANDLE hThread = CreateThread(NULL, 0, proc, (LPVOID)sClient, 0, NULL);
+    CloseHandle(hThread);
 }

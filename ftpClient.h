@@ -20,6 +20,8 @@ public:
 
     void SendEnd();
 
+    bool Awake = true;
+
     CurSocket buildDataConnector(CurSocket Server,vector<string>&cmds);
 
 private:
@@ -40,9 +42,8 @@ private:
 
     int Connect(const string &ip);
 
-    CurSocket openDataConnector(CurSocket sock_ctl);
-
     int recResponse(CurSocket _socket,string &ret);
+
 
 };
 

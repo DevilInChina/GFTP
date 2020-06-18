@@ -14,6 +14,7 @@ void sighandler(int s){
     switch (s){
         case SIGINT:{
             for(auto it :Awaking) {
+                it->Awake = false;
                 it->SendEnd();
             }
             exit(0);
@@ -40,8 +41,8 @@ ftpClient::ftpClient(int port):port(port) {
 }
 
 int ftpClient::Connect(const string &ip) {
-    CurSocket k = SocketConnect(ip,port);
-    if(k==INVALID_SOCKET){
+    _socket = SocketConnect(ip,port);
+    if(_socket==INVALID_SOCKET){
         return 0;
     }
     string s;
@@ -75,22 +76,27 @@ bool checkInvalid(const set<string>&s,const string &cmd){
 }
 void ftpClient::beginProcess() {
     string cmd, sig;
-    cout << "ftp<";
     string ret;
     CurSocket DataSocket = INVALID_SOCKET;
-    while (true) {
+    while (Awake) {
+        if(!(curStatus==CheckingPsd || (curStatus==IpConnectSucceed && lastResponse==220))){
+            cout<<"ftp< ";
+        }
         getline(cin, cmd);
         stringstream sin(cmd);
         vector<string> cmds;
+
         while (sin >> sig)cmds.push_back(sig);
-        if (cmds.empty())continue;
+        if (cmds.empty()){
+            if(Awake)continue;
+            else break;
+        }
         int cur = 0;
         if (cmds[0] == "bye" || cmds[0] == "quit") {
             /// tell server close
             SendEnd();
             return;
         }
-        cout<<cmd<<endl;
         if (curStatus == Logined) {
             if (dataTransferCmds.count(cmds[0])) {
                 vector<string> CMDS;
@@ -111,7 +117,6 @@ void ftpClient::beginProcess() {
                 }
             }
         }
-        cout<<DataSocket<<endl;
         switch (curStatus) {
             case unLogin: {
                 if (cmds[0] == "open") {
@@ -256,12 +261,13 @@ void ftpClient::beginProcess() {
             }
                 break;
         }
+        if(Awake)continue;
+        else break;
     }
 }
 
 CurSocket ftpClient::buildDataConnector(CurSocket Server,vector<string>&cmds){
     CurSocket dataSocket= INVALID_SOCKET;
-
     if(passiveMode){
         string ret;
         int k = sendDataAndResponse(Server,"PASV",cmds[1],ret);
@@ -356,17 +362,4 @@ void ftpClient::print_reply(int status,const string&rep) {
             printf("%d %s.\n",status,rep.c_str());
             break;
     }
-}
-CurSocket ftpClient::openDataConnector(CurSocket sock_ctl){
-    CurSocket sock_listen=CreateSocket("0.0.0.0",DATAPORT,false);   //创建一个数据连接
-    int ack=1;
-    //给服务器发送一个确认，告诉服务器客户端创建好了一条数据链路
-    if(send(sock_ctl,(char*)&ack,sizeof(ack),0)<0)
-    {
-        printf("client:ack write error:%d\n",errno);
-        return INVALID_SOCKET;
-    }
-    int sock_data=SocketAccept(sock_listen);
-    CurClose(sock_listen);
-    return sock_data;
 }
