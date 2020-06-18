@@ -5,6 +5,7 @@
 char buff[1024];
 
 int main(int argc,char **argv) {
+
 #ifdef WIN32
     WSADATA wsaData;
     WSAStartup(MAKEWORD(2, 2), &wsaData);

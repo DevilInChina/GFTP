@@ -36,6 +36,7 @@ ftpClient::ftpClient(int port):port(port) {
     totalCmds.insert("bye");
     totalCmds.insert("quit");
     totalCmds.insert("open");
+    totalCmds.insert("size");
 }
 
 int ftpClient::Connect(const string &ip) {
@@ -194,18 +195,44 @@ void ftpClient::beginProcess() {
                         if(*s) {
                             cout << s << endl;
                         }
+                        delete s;
                         recResponse(_socket, ret);///recive 226 or 551
                     }else{
                         CurClose(DataSocket);
                         DataSocket = INVALID_SOCKET;
                     }
                 } else if (cmds[0] == "get") {
+                    if (cmds.size() == 1) {
+                        cout<<"usage: get remote_file [local_file]\n";
+                    }else{
+                        if (DataSocket ==INVALID_SOCKET) {
+                            cout << (passiveMode ? "PASV" : "PORT") << " connect faild" << endl;
+                            break;
+                        }
+
+                        sendDataAndResponse(_socket, "RETR", cmds[1], ret);
+                        if(lastResponse==150) {
+                            if(cmds.size()==2){
+                                cmds.push_back(cmds[1]);
+                            }
+                            recvFile(DataSocket,cmds[2],DataSocket+_socket);
+                            recResponse(_socket, ret);///recive 226 or 551
+                        }else{
+                            CurClose(DataSocket);
+                            DataSocket = INVALID_SOCKET;
+                        }
+                    }
 
                 } else if (cmds[0] == "put") {
+
                 }else if (cmds[0]=="cd") {
                     if (cmds.size() == 1) cmds.emplace_back(".");
                     sendDataAndResponse(_socket, "CWD", cmds[1], ret);
-                }else{
+                }else if(cmds[0]=="size"){
+                    if (cmds.size() == 1) cmds.emplace_back(".");
+                    sendDataAndResponse(_socket, "SIZE", cmds[1], ret);
+                }
+                else{
                     if(!checkInvalid(totalCmds,cmds[0]))
                         cout<<"Usage fault"<<endl;
                 }
@@ -274,6 +301,9 @@ void ftpClient::print_reply(int status,const string&rep) {
             break;
         case 200:
             printf("%d Command %s okay.\n",status,rep.c_str());
+            break;
+        case 213:
+            printf("%d File size is:%s.\n",status,rep.c_str());
             break;
         case 220:
             printf("220 welcome,server ready.\n");

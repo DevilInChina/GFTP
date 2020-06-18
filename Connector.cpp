@@ -2,6 +2,8 @@
 // Created by Administrator on 2020/6/15.
 //
 #include <cstdio>
+#include <sstream>
+#include <iostream>
 
 using namespace std;
 
@@ -315,3 +317,186 @@ int Connector::getRandomPort() {
     po = min(65534, po);
     return po;
 }
+
+int Connector::isDictionary(const string &path) {
+    return system(("cd "+path).c_str())==CMD_SUCCEED;
+}
+
+long long Connector::analyseSize(const string &path) {
+    ifstream ff(path);
+    string res;
+    string temp;
+#ifdef WIN32
+    while (getline(ff, temp)) {
+        if (!isdigit(temp[0]))continue;///not a file in windows
+        stringstream ss(temp);
+        for (int i = 0;ss >> temp && i < 2; ++i) {}
+        return atoll(temp.c_str());
+    }
+#else
+    while (getline(ff,temp)) {
+        stringstream ss(temp);
+        for (int i = 0;ss>>temp && i < 4; ++i) {}
+        return atoll(temp.c_str());
+    }
+#endif
+
+}
+
+long long Connector::getFileSize(const string &path,int Encode) {
+    int k = isDictionary(path);
+    if(k){
+        return -1;//
+    }
+    string fileName = ".SIZE" + to_string(Encode);
+    string CMDS;
+    string del;
+#ifdef WIN32
+    CMDS = "dir ";
+    del = "del ";
+#else
+    CMDS="ls -l ";
+    del = "rm ";
+#endif
+    CMDS+=path+" >> "+fileName;
+    k = system(CMDS.c_str());
+    long long ret= 0;
+    if(k!=CMD_SUCCEED){/// no such file
+        ret = -2;
+    }else{
+        ret = analyseSize(fileName);
+    }
+    del+=fileName;
+    system(del.c_str());
+    return ret;
+}
+#define FLASH_SIZE        1024*1024*4
+#define COPY_DATA        "Hello"
+string toLinuxPath(const string &path){
+    string ret = path;
+    replace(ret.begin(),ret.end(),FILESEPERATOR,'/');
+    return ret;
+}
+#ifdef WIN32
+int Connector::sendFile(CurSocket sock, const string &paths,int Encodes) {
+    int buff_size = getFileSize(paths,Encodes);
+    if(buff_size<0){
+        return 0;
+    }
+    string path = toLinuxPath(paths);
+
+    HANDLE dump_file_descriptor = CreateFile(path.c_str(),
+                                             GENERIC_READ | GENERIC_WRITE,
+                                             FILE_SHARE_READ,
+                                             NULL,
+                                             OPEN_ALWAYS, // open exist or create new, overwrite file
+                                             FILE_ATTRIBUTE_NORMAL,
+                                             NULL);
+
+    if (dump_file_descriptor == INVALID_HANDLE_VALUE) {
+        return 0;
+    }
+    HANDLE shared_file_handler = CreateFileMapping(
+            dump_file_descriptor, // Use paging file - shared memory
+            nullptr,                 // Default security attributes
+            PAGE_READWRITE,       // Allow read and write access
+            0,                    // High-order DWORD of file mapping max size
+            buff_size,            // Low-order DWORD of file mapping max size
+            path.c_str());    // Name of the file mapping object
+    if (shared_file_handler)
+    {
+        // map memory file view, get pointer to the shared memory
+        LPVOID lp_base = MapViewOfFile(
+                shared_file_handler,  // Handle of the map object
+                FILE_MAP_READ,  // Read and write access
+                0,                    // High-order DWORD of the file offset
+                0,                    // Low-order DWORD of the file offset
+                buff_size);           // The number of bytes to map to view
+
+
+
+        // copy data to shared memory
+        //memcpy(lp_base, &share_buffer, sizeof(share_buffer));
+        sendBigData(sock,(char*)lp_base,buff_size);
+        //puts((char*)lp_base);
+        //FlushViewOfFile(lp_base, buff_size); // can choose save to file or not
+
+        // process wait here for other task to read data
+        //cout << share_buffer << endl;
+
+        // close shared memory file
+        UnmapViewOfFile(lp_base);
+        CloseHandle(shared_file_handler);
+        CloseHandle(dump_file_descriptor);
+    }
+    else {
+        CloseHandle(dump_file_descriptor);
+        return 0;
+    }
+    return 1;
+}
+
+int Connector::recvFile(CurSocket sock, const string &paths,int Encodes) {
+    int buff_size;
+
+    if(buff_size<0){
+        return 0;
+    }
+    string path = toLinuxPath(paths);
+    HANDLE dump_file_descriptor = CreateFile(path.c_str(),
+                                             GENERIC_READ | GENERIC_WRITE,
+                                             FILE_SHARE_READ|FILE_SHARE_WRITE ,
+                                             NULL,
+                                             OPEN_ALWAYS, // open exist or create new, overwrite file
+                                             FILE_ATTRIBUTE_NORMAL,
+                                             NULL);
+
+    if (dump_file_descriptor == INVALID_HANDLE_VALUE){
+        return 0;
+    }
+    HANDLE shared_file_handler = CreateFileMapping(
+            dump_file_descriptor, // Use paging file - shared memory
+            nullptr,                 // Default security attributes
+            PAGE_READWRITE,       // Allow read and write access
+            0,                    // High-order DWORD of file mapping max size
+            buff_size,            // Low-order DWORD of file mapping max size
+            path.c_str());    // Name of the file mapping object
+    if (shared_file_handler)
+    {
+        // map memory file view, get pointer to the shared memory
+        LPVOID lp_base = MapViewOfFile(
+                shared_file_handler,  // Handle of the map object
+                FILE_MAP_ALL_ACCESS,  // Read and write access
+                0,                    // High-order DWORD of the file offset
+                0,                    // Low-order DWORD of the file offset
+                buff_size);           // The number of bytes to map to view
+
+        // copy data to shared memory
+        char *share_buffer = recvBigData(sock,buff_size);
+        memcpy(lp_base, share_buffer, buff_size);
+        delete share_buffer;
+        //FlushViewOfFile(lp_base, buff_size); // can choose save to file or not
+
+        // process wait here for other task to read data
+        //cout << share_buffer << endl;
+
+        // close shared memory file
+        UnmapViewOfFile(lp_base);
+        CloseHandle(shared_file_handler);
+        CloseHandle(dump_file_descriptor);
+        //unlink(path.c_str());
+    }
+    else {
+        CloseHandle(dump_file_descriptor);
+        return 0;
+    }
+    return 1;
+}
+#else
+int Connector::sendFile(CurSocket sock, const string &paths,int Encodes){
+
+}
+int Connector::recvFile(CurSocket sock, const string &paths,int Encodes){
+
+}
+#endif

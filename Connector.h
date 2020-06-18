@@ -14,9 +14,11 @@
 #include <vector>
 #include <set>
 #include <random>
+#include <fstream>
 #define GETRAND(x) (rand()%(x))
 #ifdef  WIN32
 #include  <winsock.h>
+#include <windows.h>
 #else
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -71,24 +73,37 @@ public:
 
     int send_data(CurSocket sock, const string &s);
 
-    int sendBigData(CurSocket sock, const char*s, int length);
+    int sendBigData(CurSocket sock, const char *s, int length);
 
-    char* recvBigData(CurSocket sock,int &length);
+    char *recvBigData(CurSocket sock, int &length);
 
-    void dealIPinfo(const string &ipPortInfo,string &ip,int &port);
+    int sendFile(CurSocket sock,const string &path,int Encodes);
 
-    void encoIPinfo(string &ipPortInfo,const string &ip,int port);
+    int recvFile(CurSocket sock,const string &path,int Encodes);
+
+    void dealIPinfo(const string &ipPortInfo, string &ip, int &port);
+
+    void encoIPinfo(string &ipPortInfo, const string &ip, int port);
 
     string Encode(const string &a);
+
+
+    long long getFileSize(const string &path,int Encode);
 
     int getRandomPort();
 
     CurSocket _socket;
     const int maxSize = 255;
+    const int BlockSize = 4096;
+
 private:
     int sendSize(CurSocket sock, int size);
 
     int recvSize(CurSocket sock);
+
+    int isDictionary(const string &path);
+
+    long long analyseSize(const string &path);
 };
 
 

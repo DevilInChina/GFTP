@@ -19,6 +19,8 @@ public:
 private:
     int CMD_List(CurSocket client,CurSocket dataSocket,const string&path);
     int CMD_Cwd(CurSocket client, CurSocket dataSocket,const string&path,const string &mainPath,string &curPath);
+    int CMD_Retr(CurSocket client,CurSocket dataSocket,const string&path);
+    long long CMD_Size(CurSocket client,CurSocket dataSocket,const string&path);
     enum serverStatus{
         unLogin,IpConnectSucceed,CheckingPsd,Logined
     };

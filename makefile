@@ -6,4 +6,3 @@ linux:
 windows:
 	${cc} *.cpp -o main ${WIN_LIB} -g
 	.\main.exe 192.168.2.100
-

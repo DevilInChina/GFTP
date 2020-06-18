@@ -107,7 +107,7 @@ void ftpServer::beginProcess(CurSocket client) {
                 else if(cmds[0]=="LIST") {
                     if(dataSocketInProcess != INVALID_SOCKET) {
                         send_response(client, 150);
-                        CMD_List(client, dataSocketInProcess, curPath + "\\" + cmds[1]) ;
+                        CMD_List(client, dataSocketInProcess, curPath + FILESEPERATOR + cmds[1]) ;
 
                         CurClose(dataSocketInProcess);
                         dataSocketInProcess = INVALID_SOCKET;
@@ -115,9 +115,17 @@ void ftpServer::beginProcess(CurSocket client) {
                         send_response(client, 426,"Data connection error");
                     }
                 }else if(cmds[0]=="RETR"){
-
+                    if(dataSocketInProcess != INVALID_SOCKET) {
+                        CMD_Retr(client, dataSocketInProcess, curPath + FILESEPERATOR + cmds[1]) ;
+                        CurClose(dataSocketInProcess);
+                        dataSocketInProcess = INVALID_SOCKET;
+                    }else{
+                        send_response(client, 426,"Data connection error");
+                    }
                 }else if(cmds[0]=="CWD"){
                     CMD_Cwd(client, dataSocketInProcess, cmds[1],workingPath,curPath);
+                }else if(cmds[0]=="SIZE"){
+                    CMD_Size(client,dataSocketInProcess,curPath+FILESEPERATOR+cmds[1]);
                 }
             }break;
         }
@@ -134,7 +142,7 @@ CurSocket ftpServer::setPassiveMode(CurSocket client, vector<string>&cmds,bool &
         port = po;
     } else if (cmds[0] == "PORT") {
         res = false;
-         dataSocket = SocketConnect(cmds[1], false);
+        dataSocket = SocketConnect(cmds[1], false);
     }
     return dataSocket;
 }
@@ -249,7 +257,6 @@ void trimDic(string &curPath){
 int ftpServer::CMD_Cwd(CurSocket client, CurSocket dataSocket,const string&path,const string &mainPath,string &curPath) {
     string CMDS;
     string del;
-    cout<<path<<endl;
 #ifdef WIN32
     CMDS = "cd ";
     del = "del ";
@@ -279,3 +286,28 @@ int ftpServer::CMD_Cwd(CurSocket client, CurSocket dataSocket,const string&path,
     return true;
 }
 
+long long ftpServer::CMD_Size(CurSocket client, CurSocket dataSocket,const string&path){
+    long long ret = getFileSize(path,client+dataSocket);
+    if(ret==-1){
+        send_response(client,550,"Is a directory");
+    }else if(ret==-2){
+        send_response(client,550,"No such file");
+    }else{
+        send_response(client,213,to_string(ret));
+    }
+    return ret;
+}
+int ftpServer::CMD_Retr(CurSocket client, CurSocket dataSocket, const string &path) {
+    long long ret = getFileSize(path,client+dataSocket);
+    if(ret==-1){
+        send_response(client,550,"Is a directory");
+    }else if(ret==-2){
+        send_response(client,550,"No such file");
+    }else{
+        send_response(client,150);
+    }
+    sendFile(dataSocket,path,client+dataSocket);
+
+    send_response(client,226);
+    return 1;
+}
