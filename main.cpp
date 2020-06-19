@@ -3,7 +3,6 @@
 #include "ftpServer.h"
 #include "ftpClient.h"
 char buff[1024];
-
 string ftpServer::serverIp;
 int main(int argc,char **argv) {
 #ifdef WIN32

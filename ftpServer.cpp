@@ -330,6 +330,12 @@ void ftpServer::BeginThread(CurSocket sClient) {
 }
 #else
 void ftpServer::BeginThread(CurSocket sClient) {
-
+    int p = fork();
+    if(p==0){
+        beginProcess(sClient);
+        exit(0);
+    }else{
+        cout<<"ready"<<endl;
+    }
 }
 #endif
