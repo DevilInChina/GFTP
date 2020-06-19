@@ -132,6 +132,8 @@ void ftpServer::beginProcess(CurSocket client) {
                     CMD_Cwd(client, dataSocketInProcess, cmds[1],workingPath,curPath);
                 }else if(cmds[0]=="SIZE"){
                     CMD_Size(client,dataSocketInProcess,curPath+FILESEPERATOR+cmds[1]);
+                }else if(cmds[0]=="DELE"){
+                    CMD_Dele(client,dataSocketInProcess,curPath+FILESEPERATOR+cmds[1]);
                 }
             }break;
         }
@@ -310,9 +312,25 @@ int ftpServer::CMD_Stor(CurSocket client, CurSocket dataSocket, const string &pa
     }else{
         send_response(client,550,"File Exists");
     }
-
     send_response(client,226);
     return 1;
+}
+
+int ftpServer::CMD_Dele(CurSocket client, CurSocket dataSocket, const string &path) {
+    string CMD;
+#ifdef WIN32
+    CMD="del ";
+#else
+    CMD="rm ";
+#endif
+    CMD+=path;
+    int ret = system(CMD.c_str());
+    if(ret==CMD_SUCCEED){
+        send_response(client,250,"Command DELE OK");
+    }else{
+        send_response(client,550,"Delete file failed");
+    }
+    return ret;
 }
 #ifdef WIN32
 DWORD WINAPI ftpServer::proc(LPVOID lpParamter)

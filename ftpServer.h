@@ -59,6 +59,7 @@ private:
 
     static long long CMD_Size(CurSocket client, CurSocket dataSocket, const string &path);
 
+    static int CMD_Dele(CurSocket client, CurSocket dataSocket, const string &path);
     /**
         * @brief 和客户端交互的主要程序
         * @param client

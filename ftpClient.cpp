@@ -38,6 +38,7 @@ ftpClient::ftpClient(int port):port(port) {
     totalCmds.insert("quit");
     totalCmds.insert("open");
     totalCmds.insert("size");
+    totalCmds.insert("rm");
 }
 
 int ftpClient::Connect(const string &ip) {
@@ -252,8 +253,17 @@ void ftpClient::beginProcess() {
                     if (cmds.size() == 1) cmds.emplace_back(".");
                     sendDataAndResponse(_socket, "CWD", cmds[1], ret);
                 }else if(cmds[0]=="size"){
-                    if (cmds.size() == 1) cmds.emplace_back(".");
+                    if (cmds.size() == 1) {
+                        cout<<"usage: size remote_file\n";
+                        break;
+                    }
                     sendDataAndResponse(_socket, "SIZE", cmds[1], ret);
+                }else if(cmds[0]=="rm"){
+                    if (cmds.size() == 1) {
+                        cout<<"usage: rm remote_file\n";
+                        break;
+                    }
+                    sendDataAndResponse(_socket, "DELE", cmds[1], ret);
                 }
                 else{
                     if(!checkInvalid(totalCmds,cmds[0]))
