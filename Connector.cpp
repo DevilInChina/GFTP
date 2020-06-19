@@ -9,7 +9,7 @@ using namespace std;
 
 #include "Connector.h"
 
-void Connector::dealIPinfo(const string &ipPortInfo,string &ip,int &port){
+void Connector::decoIPinfo(const string &ipPortInfo, string &ip, int &port){
     string info = ipPortInfo;
     replace(info.begin(),info.end(),',','.');
     int cnt = 0;
@@ -78,7 +78,7 @@ CurSocket Connector::CreateSocket(const string &ip, int port,bool changeSelf) {
 CurSocket Connector::CreateSocket(const string &ipPortInfo,bool changeSelf){
     string ip;
     int port;
-    dealIPinfo(ipPortInfo,ip,port);
+    decoIPinfo(ipPortInfo, ip, port);
     return CreateSocket(ip,port,changeSelf);
 }
 CurSocket Connector::SocketAccept(CurSocket sock) {
@@ -112,7 +112,7 @@ CurSocket Connector::SocketConnect(const string &ip, int port,bool changeSelf) {
 CurSocket Connector::SocketConnect(const string &ipPortInfo,bool changeSelf) {
     string ip;
     int port;
-    dealIPinfo(ipPortInfo,ip,port);
+    decoIPinfo(ipPortInfo, ip, port);
 
     return SocketConnect(ip,port,changeSelf);
 }
@@ -494,9 +494,8 @@ int Connector::recvFile(CurSocket sock, const string &paths,int Encodes) {
 int Connector::sendFile(CurSocket sock, const string &paths,int Encodes){
     int fileSize = getFileSize(paths,Encodes);
     int file_fd = open(paths.c_str(),O_RDONLY);
-    cout<<fileSize<<" "<<file_fd<<" "<<sock<<endl;
     sendSize(sock,fileSize);
-    cout<<sendfile(sock,file_fd, nullptr,fileSize)<<endl;
+    sendfile(sock,file_fd, nullptr,fileSize);
     close(file_fd);
 }
 int Connector::recvFile(CurSocket sock, const string &paths,int Encodes){

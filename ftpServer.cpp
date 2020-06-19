@@ -25,8 +25,6 @@ void ftpServer::beginListen() {
             continue;
         }else{
             BeginThread(sClient);
-            //thread s(beginProcess,sClient);
-            //beginProcess(sClient);////Thread or Fork
         }
     }
 }

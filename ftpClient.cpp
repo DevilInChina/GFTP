@@ -74,6 +74,7 @@ bool checkInvalid(const set<string>&s,const string &cmd){
     }
     return false;
 }
+
 void ftpClient::beginProcess() {
     string cmd, sig;
     string ret;
