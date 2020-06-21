@@ -304,10 +304,12 @@ int ftpServer::CMD_Retr(CurSocket client, CurSocket dataSocket, const string &pa
 }
 int ftpServer::CMD_Stor(CurSocket client, CurSocket dataSocket, const string &path) {
     long long ret = getFileSize(path,client+dataSocket);
+
     if(ret==-1){
         send_response(client,550,"Is a directory");
     }else if(ret==-2){///no file and not directory
         send_response(client,150);
+        cout<<"bef recv f"<<endl;
         recvFile(dataSocket,path,client+dataSocket);
     }else{
         send_response(client,550,"File Exists");

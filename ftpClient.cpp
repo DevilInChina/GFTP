@@ -243,8 +243,10 @@ void ftpClient::beginProcess() {
                         sendDataAndResponse(_socket, "STOR", cmds[2], ret);
                         if(lastResponse==150) {
                             sendFile(DataSocket,cmds[1],DataSocket+_socket);
+                            cout<<"SendFile done"<<endl;
                             recResponse(_socket, ret);///recive 226 or 551
                         }else{
+
                         }
                         CurClose(DataSocket);
                         DataSocket = INVALID_SOCKET;
